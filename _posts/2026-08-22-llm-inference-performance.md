@@ -2,6 +2,7 @@
 title: "从一次请求理解 LLM 在线推理：应用、流程与指标"
 description: "系列开篇：从 LLM 的自回归生成、应用形态与一次在线请求出发，建立理解推理性能的基本框架。"
 date: 2026-08-22 00:00:00 +0800
+math: true
 categories: [模型与系统, LLM 推理]
 tags: [LLM, 在线推理, Prefill, Decode, TTFT, TPOT]
 ---
@@ -40,15 +41,15 @@ tags: [LLM, 在线推理, Prefill, Decode, TTFT, TPOT]
 
 自回归语言模型要做的，是在已有上下文的条件下预测下一个 Token。模型首先得到的是下一个 Token 的概率分布：
 
-```text
-P(xₜ₊₁ | x₁, x₂, …, xₜ)
-```
+$$
+P(x_{t+1} \mid x_1, x_2, \ldots, x_t)
+$$
 
 这个预测由 Transformer 完成。Transformer 的 self-attention 机制最早由 Vaswani 等人在 *Attention Is All You Need* 中系统提出 [1]；主流自回归 LLM 通常采用其 decoder-only 变体。下图不是原论文结构图的复制，而是为在线生成过程重新绘制的简化视图：
 
 ![Decoder-only LLM 的一次自回归生成：Prompt 经 Tokenizer、Causal Attention、MLP、LM Head 和采样后得到下一个 Token；KV Cache 在后续 Decode 中被复用。](/assets/images/posts/llm-inference/decoder-only-inference-flow.png)
 
-*图 1：Decoder-only LLM 的一次自回归生成流程（笔者生成）。*
+*图 1：Decoder-only LLM 的一次自回归生成流程。*{: .text-center .d-block .mt-2 .mb-4 }
 
 图中的 **Causal Self-Attention** 表示当前位置只能关注已有的 Token，不能读取未来 Token；这正是生成必须逐步进行的原因。模型经过多层 Decoder Block 后，由 LM Head 得到词表上每个候选 Token 的分数（logits），再由采样策略选出下一个 Token。生成第二个及之后的 Token 时，历史 Token 的 Key 和 Value 会以 KV Cache 的形式被复用；它的具体内存与性能问题留到后续文章展开。
 
@@ -135,7 +136,7 @@ Agent 的基本形态是模型在多轮循环中决定下一步操作：
 
 ![一次在线 LLM 请求的完整生命周期：请求经过 Prompt 构造与 Tokenizer、排队调度、Prefill、首 Token、Decode 循环和流式返回，最后释放状态；KV Cache 在 Decode 阶段被使用。](/assets/images/posts/llm-inference/online-inference-lifecycle.png)
 
-*图 2：一次在线 LLM 请求的完整生命周期（笔者生成）。*
+*图 2：一次在线 LLM 请求的完整生命周期。*{: .text-center .d-block .mt-2 .mb-4 }
 
 RAG 的检索、Agent 的工具调用等步骤可能发生在一次模型调用前后；而模型引擎本身主要负责 Tokenize、调度、Prefill、Decode 和输出。端到端延迟需要同时考虑这两层。
 
@@ -195,9 +196,9 @@ Hello → ! → I'm → an → AI → assistant
 
 端到端延迟从请求发出开始，到完整响应接收完成为止。若输出共有 `M` 个 Token，可以用下式建立直觉：
 
-```text
-端到端延迟 ≈ TTFT + (M - 1) × TPOT + 收尾开销
-```
+$$
+T_{\text{end-to-end}} \approx \operatorname{TTFT} + (M - 1) \cdot \operatorname{TPOT} + T_{\text{tail}}
+$$
 
 这不是严格公式，因为每一步 Decode 的耗时并不完全一致；但它说明了不同工作负载的差异：长输入、短输出时，TTFT 往往更关键；短输入、长输出时，TPOT 的累积影响更大；两者都长时，则需要同时关注两条路径。
 

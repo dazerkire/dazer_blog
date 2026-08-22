@@ -149,9 +149,11 @@ assets:
     env: # [development | production]
 
 pwa:
-  enabled: true # The option for PWA feature (installable)
+  # This is a content-first personal blog. Disable offline caching so a new
+  # deployment is not hidden behind a previously installed service worker.
+  enabled: false
   cache:
-    enabled: true # The option for PWA offline cache
+    enabled: false
     # Paths defined here will be excluded from the PWA cache.
     # Usually its value is the `baseurl` of another website that
     # shares the same domain name as the current website.
