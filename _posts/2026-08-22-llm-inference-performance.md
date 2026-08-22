@@ -46,7 +46,7 @@ P(xₜ₊₁ | x₁, x₂, …, xₜ)
 
 这个预测由 Transformer 完成。Transformer 的 self-attention 机制最早由 Vaswani 等人在 *Attention Is All You Need* 中系统提出 [1]；主流自回归 LLM 通常采用其 decoder-only 变体。下图不是原论文结构图的复制，而是为在线生成过程重新绘制的简化视图：
 
-![Decoder-only LLM 的一次自回归生成：Prompt 经 Tokenizer、Causal Attention、MLP、LM Head 和采样后得到下一个 Token；KV Cache 在后续 Decode 中被复用。]({{ '/assets/images/posts/llm-inference/decoder-only-inference-flow.png' | relative_url }})
+![Decoder-only LLM 的一次自回归生成：Prompt 经 Tokenizer、Causal Attention、MLP、LM Head 和采样后得到下一个 Token；KV Cache 在后续 Decode 中被复用。](/assets/images/posts/llm-inference/decoder-only-inference-flow.png)
 
 *图 1：Decoder-only LLM 的一次自回归生成流程（笔者生成）。*
 
@@ -133,7 +133,7 @@ Agent 的基本形态是模型在多轮循环中决定下一步操作：
 
 上一节讨论的是应用如何决定请求形态。无论应用属于哪一类，当最终 Prompt 已经确定，推理引擎都需要沿着一条相对稳定的路径处理请求：
 
-![一次在线 LLM 请求的完整生命周期：请求经过 Prompt 构造与 Tokenizer、排队调度、Prefill、首 Token、Decode 循环和流式返回，最后释放状态；KV Cache 在 Decode 阶段被使用。]({{ '/assets/images/posts/llm-inference/online-inference-lifecycle.png' | relative_url }})
+![一次在线 LLM 请求的完整生命周期：请求经过 Prompt 构造与 Tokenizer、排队调度、Prefill、首 Token、Decode 循环和流式返回，最后释放状态；KV Cache 在 Decode 阶段被使用。](/assets/images/posts/llm-inference/online-inference-lifecycle.png)
 
 *图 2：一次在线 LLM 请求的完整生命周期（笔者生成）。*
 
