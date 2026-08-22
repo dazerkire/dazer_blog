@@ -37,7 +37,10 @@ social:
   name: 模型与系统笔记
   email:
   fediverse_handle: # fill in your fediverse handle. E.g. "@username@domain.com"
-  links: []
+  # The first element is used as the copyright owner's link in the footer.
+  # Point it to the public site instead of the source repository.
+  links:
+    - https://dazerkire.github.io/dazer_blog/
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
     # - https://www.linkedin.com/in/username
