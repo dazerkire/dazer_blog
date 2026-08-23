@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">Roofline 性能模型</title>
+  <desc id="desc">横轴为算术强度，纵轴为性能；性能先受内存带宽限制线性上升，后受计算峰值限制形成平台。</desc>
+  <style>
+    .bg { fill: #fbfcfe; }
+    .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
+    .axis { stroke: #344054; stroke-width: 2.5; }
+    .roof { fill: none; stroke: #2563eb; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 500 24px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .small { fill: #64748b; font: 500 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .em { fill: #1d4ed8; font: 600 24px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  </style>
+  <rect class="bg" width="1120" height="620" rx="20"/>
+  <line class="grid" x1="135" y1="440" x2="1010" y2="440"/>
+  <line class="grid" x1="135" y1="320" x2="1010" y2="320"/>
+  <line class="grid" x1="135" y1="200" x2="1010" y2="200"/>
+  <line class="grid" x1="325" y1="80" x2="325" y2="515"/>
+  <line class="grid" x1="520" y1="80" x2="520" y2="515"/>
+  <line class="grid" x1="715" y1="80" x2="715" y2="515"/>
+  <line class="grid" x1="910" y1="80" x2="910" y2="515"/>
+  <line class="axis" x1="135" y1="515" x2="1025" y2="515"/>
+  <path class="axis" d="M1025 515 l-14 -8 M1025 515 l-14 8"/>
+  <line class="axis" x1="135" y1="530" x2="135" y2="65"/>
+  <path class="axis" d="M135 65 l-8 14 M135 65 l8 14"/>
+  <path class="roof" d="M160 495 L630 125 L985 125"/>
+  <line class="guide" x1="630" y1="125" x2="630" y2="515"/>
+  <text class="em" x="708" y="108">计算峰值 Pₚₑₐₖ</text>
+  <text class="em" x="258" y="310" transform="rotate(-38 258 310)">显存带宽 BWₚₑₐₖ</text>
+  <text class="small" x="275" y="406">memory-bound</text>
+  <text class="small" x="750" y="175">compute-bound</text>
+  <text class="muted" x="618" y="548">转折点</text>
+  <circle cx="360" cy="337" r="8" fill="#f97316"/>
+  <text class="small" x="380" y="330">低算术强度：搬运数据受限</text>
+  <circle cx="825" cy="125" r="8" fill="#16a34a"/>
+  <text class="small" x="842" y="267">高算术强度：计算受限</text>
+  <text class="label" x="500" y="594">算术强度 I = FLOPs / Byte</text>
+  <text class="label" x="-375" y="52" transform="rotate(-90)">可达性能（FLOPs/s）</text>
+  <text class="muted" x="158" y="544">低</text>
+  <text class="muted" x="980" y="544">高</text>
+</svg>
