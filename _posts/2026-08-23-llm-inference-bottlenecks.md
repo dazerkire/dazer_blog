@@ -1,5 +1,5 @@
 ---
-title: "从指标到瓶颈：Prefill、Decode 与 LLM 推理的计算本质"
+title: "LLM 推理系统（二）：从指标到瓶颈——Prefill、Decode 与计算本质"
 description: "从 TTFT、TPOT 出发，拆解 LLM 推理中的 attention、MLP、KV Cache、GEMM/GEMV 与 Roofline 下界。"
 date: 2026-08-23 00:00:00 +0800
 math: true
