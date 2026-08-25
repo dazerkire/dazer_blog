@@ -14,13 +14,17 @@
 
 ### 三、KV Cache、并发与请求调度
 
-核心问题：单请求 Decode 已受带宽限制；当请求变成几十、几百条时，KV Cache 如何决定并发上限？
+核心问题：单请求 Decode 已受带宽限制；当请求变成几十、几百条时，KV Cache 如何决定并发上限，调度又如何决定这些显存与算力有没有被浪费？原理在本篇讲透，第八篇只做框架落地对比。
 
-- 从每 Token KV Cache 增量和多请求并发的例子开始；
-- 静态 batch 为什么会被不同请求长度拖累；
-- continuous batching 如何按 Decode step 重组 batch；
-- PagedAttention 如何用 block 管理 KV，避免连续预分配与碎片；
-- 并发、吞吐、TTFT、TPOT 之间的取舍。
+- 承接第二篇：batch=1 算力利用率不足 1%，并发是买回算力的杠杆；并发提升的是权重复用（沿 Roofline 上移）；
+- 从每 Token KV Cache 增量和多请求并发的例子开始，估算理想并发上限；
+- 静态 batch 为什么会被不同请求长度拖累：槽位占用与 Prefill padding；
+- continuous batching 如何以 Decode step 为粒度重组 batch（iteration-level scheduling）；
+- Prefill 与 Decode 的干扰：新请求的 Prefill 为何会卡住所有在跑请求的 Decode；chunked prefill 按 token 预算切分、让每步时长有界的原理；
+- PagedAttention 如何用 block 管理 KV，避免连续预分配与碎片；copy-on-write 与 prefix cache（呼应第一篇的多轮对话与 Agent 负载）；
+- 显存满时的选择：准入控制与抢占（recompute / swap）的代价比较；
+- 成本模型：权重读取随 batch 摊销、KV 读取不摊销；TPOT 随并发上升，吞吐在 KV 带宽处饱和；
+- 并发、吞吐、TTFT、TPOT 之间的取舍与 SLO 视角。
 
 ### 四、量化究竟改变了什么
 
@@ -68,10 +72,9 @@
 
 ### 八、推理框架与引擎如何落实这些设计
 
-核心问题：缓存、调度、量化和 kernel 如何在 vLLM、TensorRT-LLM 等框架中变成系统能力？
+核心问题：第三篇及前文的原理，在 vLLM、TensorRT-LLM、SGLang 等框架中分别如何落地？实际选型时如何比较？
 
-- KV 管理：PagedAttention、block manager、prefix cache；
-- 调度：continuous batching、Prefill / Decode 取舍；
+- 同一原理的不同实现：block manager 与调度器的实现差异、prefix cache（含 RadixAttention 一类变体）、chunked prefill 的具体策略、PD 分离架构；
 - 图优化与 kernel：编译、fusion、量化路径；
 - 分布式推理：tensor parallel、pipeline parallel、通信；
 - 框架选择由模型、硬件、部署目标与可维护性共同决定；
@@ -81,4 +84,4 @@
 
 **长上下文与 Prefill**
 
-若后续讨论发现内容足够独立，可放在量化之前，覆盖 FlashAttention、chunked prefill 与 context parallelism。当前不占用固定编号。
+若后续讨论发现内容足够独立，可放在量化之前，覆盖 FlashAttention 与 context parallelism（chunked prefill 的原理已在第三篇随调度讲掉）。当前不占用固定编号。
