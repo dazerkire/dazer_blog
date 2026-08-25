@@ -29,7 +29,7 @@ tags: [LLM, 在线推理, Prefill, Decode, KV Cache, Roofline]
 
 ## Prefill：长序列上的矩阵乘
 
-让我们先回顾Transformer实际在算什么。
+让我们先回顾 Transformer 实际在算什么。
 先只讨论 batch 为 1 的情形。设一个 Transformer 层的输入为 $X\in\mathbb{R}^{L\times d}$，其中 $L$ 是 Prompt 长度，$d$ 是隐藏维度。Prefill 一次处理全部 $L$ 行输入，因此线性层是矩阵乘矩阵，通常称为 **GEMM**（General Matrix Multiply）。
 
 输入 $X$ 会被投影成 Query、Key 和 Value：
@@ -45,7 +45,13 @@ A_i=\operatorname{softmax}\left(\frac{Q_iK_{g(i)}^\top}{\sqrt{d_h}}+M_{\mathrm{c
 \qquad O_i=A_iV_{g(i)}
 $$
 
-$g(i)$ 表示第 $i$ 个 Query head 对应哪一个 KV head：MHA 中每个 Query head 各有一组 K、V；GQA 中多个 Query head 共享一组 K、V。最后，所有 $O_i$ 拼接并经过输出投影 $W_O$。这就是后面会分别计入的 $QK^\top$ 与 $AV$ 两次矩阵乘。[1]
+$g(i)$ 表示第 $i$ 个 Query head 对应哪一个 KV head：MHA 中每个 Query head 各有一组 K、V；GQA 中多个 Query head 共享一组 K、V。最后，所有 $O_i$ 拼接，经过输出投影得到 attention 块的输出：
+
+$$
+O=\operatorname{Concat}\bigl(O_1,\ldots,O_{n_q}\bigr)\,W_O
+$$
+
+拼接后的维度是 $n_q\cdot d_h=d$，因此 $W_O$ 是 $d\times d$。至此，attention 中需要单独计入计算量的，就是 $A_i$ 定义里的 $QK^\top$ 与 $AV$ 两次矩阵乘。[1]
 
 attention 之后的 SwiGLU MLP 则是三次线性投影与一次逐元素门控：
 
@@ -56,13 +62,13 @@ $$
 
 $W_{\mathrm{up}}$、$W_{\mathrm{gate}}$ 将维度从 $d$ 扩展到中间维度 $m$，$W_{\mathrm{down}}$ 再将其投影回 $d$。有了这两个结构，后面的 FLOPs 统计就只是在数这些矩阵乘的形状。
 
-若矩阵形状为 $(a\times b)(b\times c)$，一次前向矩阵乘约需：
+若矩阵形状为 $(a\times b)(b\times c)$：输出矩阵有 $a\times c$ 个数，每个数都是长度为 $b$ 的点积，每个元素一次乘法、一次加法，约需 $2b$ FLOPs。因此一次前向矩阵乘约需：
 
 $$
 2abc\ \text{FLOPs}
 $$
 
-这里将一次乘加（FMA）按 2 次浮点运算计数。以此为口径，一层中 Q、K、V 和输出投影的计算量约为：
+这里将一次乘加（FMA）按 2 次浮点运算计数。这条规则还有一个等价、更好记的形式：权重矩阵的每个参数，对每一行输入恰好参与一次乘加，因此**线性层 FLOPs = 2 × 参数个数 × token 数**。后文的各项统计都可以用这条公式直接复核。以此为口径，先按 MHA（四个投影都是 $d\times d$）估计，一层中 Q、K、V 和输出投影的计算量约为：
 
 $$
 4\times (2Ld^2)=8Ld^2
@@ -79,6 +85,8 @@ attention 也有两次主要的矩阵乘：$QK^\top$ 用于计算分数，$AV$ �
 $$
 2L^2d + 2L^2d = 4L^2d
 $$
+
+注意 $L$ 在两类计算中出现的方式不同：投影和 MLP 是 token 与参数相乘，每个 token 独立过一遍权重，$L$ 只出现一次；$QK^\top$ 和 $AV$ 是 token 与 token 相乘，$L$ 个位置两两配对，才会出现 $L^2$。
 
 softmax、RoPE、RMSNorm、残差连接和 SiLU 也需要计算，但相对于大规模 GEMM 常是次要项；它们在实际 kernel 中依然会影响延迟，通常会尽量与相邻操作融合。
 
@@ -131,6 +139,8 @@ $$
 
 该模型使用 GQA：每 4 个 Query head 共享一个 KV head。这里的计算只用于说明数量级；不同模型的层数、隐藏维度、FFN 维度与 KV head 数都可能不同。[3]
 
+单位口径约定：FLOPs 与带宽使用十进制前缀（$1\ \text{G}=10^9$、$1\ \text{T}=10^{12}$），显存容量使用二进制前缀（MiB、GiB，$1\ \text{GiB}=2^{30}$ 字节）；做除法时分子与分母保持同一口径，混用会引入约 7% 的偏差。
+
 假设 Prompt 长度 $L=2048$，采用 BF16（每元素 $b=2$ 字节）。先只统计 Transformer block 内的主要算子，暂不计 embedding、LM Head 和小算子：
 
 $$
@@ -154,7 +164,7 @@ $$
 
 若使用同样 Q head 数的 MHA，KV Cache 会是这里的 4 倍，即约 $1$ GiB。KV Cache 是随上下文长度和并发请求数线性增长的**存储量**，与前面用于描述计算量的 FLOPs 是两件事。
 
-进入 Decode 后，每个新 Token 的 QKV、输出投影和 MLP 计算量不再乘以 $L$；但是每层仍需对长度为 $L$ 的历史 KV 做一次读写相关的 attention。按上述配置，Transformer block 合计约为 $15$ GFLOPs/token，其中绝大多数仍来自读取权重后进行的线性层计算。此时不能再忽略 LM Head：它每一步都要为整个词表计算 logits，再增加约 $1.05$ GFLOPs。因此完整的主要计算量约为 $16.1$ GFLOPs/token。这个数看似很小，却不足以说明它会很快：关键还在于必须搬运多少字节。
+进入 Decode 后，每个新 Token 的 QKV、输出投影和 MLP 计算量不再乘以 $L$。用主公式复核：Transformer block 共约 $6.98$B 参数（每层约 $218$M），线性层部分为 $2\times 6.98\,\text{B}\approx 14$ GFLOPs/token；attention 仍需对长度为 $L$ 的历史 KV 做两次矩阵乘，约 $1.1$ GFLOPs/token。两项合计约 $15$ GFLOPs/token，其中绝大多数来自线性层。此时不能再忽略 LM Head：它每一步都要为整个词表计算 logits，再增加约 $1.05$ GFLOPs。因此完整的主要计算量约为 $16.1$ GFLOPs/token。这个数看似很小，却不足以说明它会很快：关键还在于必须搬运多少字节。
 
 ## Roofline：FLOPs 与字节量共同决定下界
 
@@ -174,29 +184,37 @@ $$
 I=\frac{F}{B}
 $$
 
-称为算术强度：每搬运 1 字节数据，完成多少 FLOPs。算术强度低时，性能受带宽限制；算术强度提高后，才可能碰到计算峰值这条“屋顶”。这就是 Roofline 这个名字的由来：带宽限制区是一条斜线，计算峰值区是一条水平线。
+称为算术强度：每搬运 1 字节数据，完成多少 FLOPs。算术强度低时，性能受带宽限制；算术强度提高后，才可能碰到计算峰值这条“屋顶”。这就是 Roofline 这个名字的由来：带宽限制区是一条斜线，计算峰值区是一条水平线。斜线与水平线的交点在
+
+$$
+I^{*}=\frac{P_{\mathrm{peak}}}{BW_{\mathrm{peak}}}
+$$
+
+称为屋脊点，由硬件的两个峰值之比决定。它回答的问题是：每搬运 1 字节，至少要配上多少 FLOPs，才可能触及计算峰值。当 $I<I^{*}$ 时，无论实现多好，算力利用率的上限都是 $I/I^{*}$；只有越过屋脊点，性能才由计算峰值封顶。
 
 <figure class="text-center mt-3 mb-4">
   <img
     src="/assets/images/posts/llm-inference/roofline-model.svg"
     alt="Roofline 模型：性能在低算术强度时受显存带宽限制并沿斜线增长；达到计算峰值后形成水平平台。"
     style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 1：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定。</figcaption>
+  <figcaption class="text-muted mt-2">图 1：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定，两者的交点即屋脊点。</figcaption>
 </figure>
 
-为与后文的公开基准对齐，以下统一采用 H200 SXM。它与 H100 同属 Hopper 架构；这里按 dense BF16 的 $989$ TFLOPS 与 $4.8$ TB/s HBM3e 带宽计算，而不采用厂商表中“开启结构化稀疏”时的更高峰值。[5] 上述 2048-token Prefill 的纯计算下界约为：
+为与后文的公开基准对齐，以下统一采用 H200 SXM。它与 H100 同属 Hopper 架构，dense BF16 计算峰值相同，这里取 $989$ TFLOPS 与 $4.8$ TB/s HBM3e 带宽，不采用厂商表中“开启结构化稀疏”时的更高峰值。[5] 上述 2048-token Prefill 的纯计算下界约为：
 
 $$
 \frac{30.8\ \text{TFLOPs}}{989\ \text{TFLOPS}}
 \approx 31\ \text{ms}
 $$
 
-计算峰值与 H100 的 dense BF16 峰值相同，因此 Prefill 的纯计算下界约为 $31$ ms；但 H200 的带宽更高。对 batch=1 的 Decode，字节量应按每步真正遍历的权重估计，而不是机械使用完整参数量：Transformer block 约为 $6.98$B 参数，LM Head 约为 $0.53$B 参数，合计约 $7.5$B 个 BF16 参数，即约 $15.0$ GB。输入 embedding 仅做当前 Token 的 lookup，不会在每一步读取整张 embedding 表；再加上约 256 MiB 的已有 GQA KV Cache，带宽下界约为：
+对 batch=1 的 Decode，字节量应按每步真正遍历的权重估计，而不是机械使用完整参数量：Transformer block 约为 $6.98$B 参数，LM Head 约为 $0.53$B 参数，合计约 $7.5$B 个 BF16 参数，即约 $15.0$ GB。输入 embedding 仅做当前 Token 的 lookup，不会在每一步读取整张 embedding 表；再加上约 256 MiB 的已有 GQA KV Cache，带宽下界约为：
 
 $$
 \frac{15.3\ \text{GB}}{4.8\ \text{TB/s}}
 \approx 3.2\ \text{ms/token}
 $$
+
+把这两个下界放回 Roofline 上对照：H200 的屋脊点为 $989\ \text{TFLOPS}/4.8\ \text{TB/s}\approx 206$ FLOPs/字节。2048-token Prefill 的算术强度约为 $30.8\ \text{TFLOPs}/15.0\ \text{GB}\approx 2000$，在屋脊点右侧，落在计算平台上，因此下界由算力给出（约 31 ms）；batch=1 Decode 的算术强度约为 $16.1\ \text{GFLOPs}/15.3\ \text{GB}\approx 1$，深在斜线区，算力利用率上限约 $1/206\approx 0.5\%$，下界由带宽给出（约 3.2 ms/token）。
 
 这两个数字都不是实际服务延迟的承诺。峰值吞吐和峰值带宽很难同时、持续地达到；attention、归一化、采样、kernel launch、内存管理以及多 GPU 通信也未包含在内。更接近现实的表达是：
 
@@ -215,7 +233,7 @@ $$
 
 ## 小结
 
-Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。
+Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。放在 Roofline 上，就是 Prefill 的算术强度远在屋脊点之上，速度由计算峰值决定；Decode 深在屋脊点之下，速度由显存带宽决定。
 
 这给出了阅读后续优化方法的一条主线：有的技术减少 FLOPs，有的减少字节搬运，有的提高权重复用，有的压缩 KV Cache，有的则试图打破逐 Token 的串行过程。只有先区分瓶颈来自计算、带宽还是串行依赖，才知道一个优化为什么会有效，以及它会牺牲什么。
 
