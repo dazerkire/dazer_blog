@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690" role="img" aria-labelledby="title desc">
+  <title id="title">静态 batch 与 continuous batching 的时间线对比</title>
+  <desc id="desc">上图：静态 batch 中四个请求绑定到 batch 结束，短请求的槽位空占，新请求排队等待；下图：continuous batching 按步重组 batch，完成的请求立即释放槽位，新请求下一步加入。</desc>
+  <style>
+    .bg { fill: #fbfcfe; }
+    .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .lane { fill: #64748b; font: 500 19px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .tick { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .axis { stroke: #94a3b8; stroke-width: 1.5; }
+    .live { fill: #2563eb; }
+    .live2 { fill: #f97316; }
+    .idle { fill: url(#hatch); stroke: #cbd5e1; stroke-width: 1.5; }
+    .wait { fill: none; stroke: #f97316; stroke-width: 2; stroke-dasharray: 6 5; }
+    .frame1 { fill: none; stroke: #e2e8f0; stroke-width: 1.5; rx: 10; }
+  </style>
+  <defs>
+    <pattern id="hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="9" height="9" fill="#f1f5f9"/>
+      <line x1="0" y1="0" x2="0" y2="9" stroke="#cbd5e1" stroke-width="2.5"/>
+    </pattern>
+  </defs>
+  <rect class="bg" width="1120" height="690" rx="20"/>
+
+  <text class="panel" x="150" y="60">静态 batch：槽位绑定整个生命周期</text>
+
+  <text class="lane" x="140" y="118" text-anchor="end">A · 32</text>
+  <rect class="live" x="150" y="96" width="113" height="34" rx="4"/>
+  <rect class="idle" x="263" y="96" width="787" height="34" rx="4"/>
+
+  <text class="lane" x="140" y="170" text-anchor="end">B · 64</text>
+  <rect class="live" x="150" y="148" width="225" height="34" rx="4"/>
+  <rect class="idle" x="375" y="148" width="675" height="34" rx="4"/>
+
+  <text class="lane" x="140" y="222" text-anchor="end">C · 128</text>
+  <rect class="live" x="150" y="200" width="450" height="34" rx="4"/>
+  <rect class="idle" x="600" y="200" width="450" height="34" rx="4"/>
+
+  <text class="lane" x="140" y="274" text-anchor="end">D · 256</text>
+  <rect class="live" x="150" y="252" width="900" height="34" rx="4"/>
+
+  <rect class="wait" x="266" y="298" width="784" height="22" rx="4"/>
+  <text class="note" x="278" y="314">请求 E 第 33 步到达：排队等待 223 步，直到整个 batch 解散（全部计入 TTFT）</text>
+
+  <line class="axis" x1="150" y1="336" x2="1050" y2="336"/>
+  <text class="tick" x="150" y="358" text-anchor="middle">0</text>
+  <text class="tick" x="375" y="358" text-anchor="middle">64</text>
+  <text class="tick" x="600" y="358" text-anchor="middle">128</text>
+  <text class="tick" x="825" y="358" text-anchor="middle">192</text>
+  <text class="tick" x="1050" y="358" text-anchor="middle">256 step</text>
+  <text class="note" x="1048" y="88" text-anchor="end">斜纹区域 = 空占（槽位仍在被计算，产出为 padding）</text>
+
+  <text class="panel" x="150" y="412">Continuous batching：槽位按步重组</text>
+
+  <text class="lane" x="140" y="470" text-anchor="end">槽位 1</text>
+  <rect class="live" x="150" y="448" width="113" height="34" rx="4"/>
+  <rect class="live2" x="266" y="448" width="337" height="34" rx="4"/>
+  <text class="note" x="612" y="470">…</text>
+
+  <text class="lane" x="140" y="522" text-anchor="end">槽位 2</text>
+  <rect class="live" x="150" y="500" width="225" height="34" rx="4"/>
+  <rect class="live2" x="378" y="500" width="352" height="34" rx="4"/>
+  <text class="note" x="740" y="522">…</text>
+
+  <text class="lane" x="140" y="574" text-anchor="end">槽位 3</text>
+  <rect class="live" x="150" y="552" width="450" height="34" rx="4"/>
+  <rect class="live2" x="603" y="552" width="422" height="34" rx="4"/>
+
+  <text class="lane" x="140" y="626" text-anchor="end">槽位 4</text>
+  <rect class="live" x="150" y="604" width="900" height="34" rx="4"/>
+  <text class="note" x="1048" y="626" text-anchor="end">…</text>
+
+  <line class="axis" x1="150" y1="650" x2="1050" y2="650"/>
+  <text class="tick" x="150" y="672" text-anchor="middle">0</text>
+  <text class="tick" x="375" y="672" text-anchor="middle">64</text>
+  <text class="tick" x="600" y="672" text-anchor="middle">128</text>
+  <text class="tick" x="825" y="672" text-anchor="middle">192</text>
+  <text class="tick" x="1050" y="672" text-anchor="middle">256 step</text>
+
+  <text class="note" x="266" y="440">A 完成即退出，E 下一步加入</text>
+  <text class="note" x="1048" y="440" text-anchor="end">蓝色 = 首批请求　橙色 = 中途加入的请求</text>
+</svg>
