@@ -86,6 +86,8 @@ $$
 2L^2d + 2L^2d = 4L^2d
 $$
 
+为简化推导，这里按满矩阵计；严格考虑因果掩码时，每个位置只能关注自身及之前的 Token，有效计算的是下三角部分，约为其一半。
+
 注意 $L$ 在两类计算中出现的方式不同：投影和 MLP 是 token 与参数相乘，每个 token 独立过一遍权重，$L$ 只出现一次；$QK^\top$ 和 $AV$ 是 token 与 token 相乘，$L$ 个位置两两配对，才会出现 $L^2$。
 
 softmax、RoPE、RMSNorm、残差连接和 SiLU 也需要计算，但相对于大规模 GEMM 常是次要项；它们在实际 kernel 中依然会影响延迟，通常会尽量与相邻操作融合。
@@ -103,6 +105,14 @@ x_{t+1}\in\mathbb{R}^{1\times d}
 $$
 
 同一线性层从 $XW$ 变为 $x_{t+1}W$，更接近 **GEMV**（General Matrix–Vector Multiply）。每读取一次权重，只有一个新 Token 可以使用它；权重复用很低。
+
+<figure class="text-center mt-3 mb-4">
+  <img
+    src="/assets/images/posts/llm-inference/gemm-vs-gemv.svg"
+    alt="Prefill 与 Decode 矩阵乘形态对比：Prefill 是矩阵乘矩阵，每列权重被所有 token 复用；Decode 是矩阵乘向量，每个权重只被单个新 token 使用一次。"
+    style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 1：Prefill（GEMM）与 Decode（GEMV）的权重复用度对比。两种形态读取的权重字节数相同，差别全在每个权重服务了多少个 Token。</figcaption>
+</figure>
 
 新 Token 仍要计算自己的 $Q,K,V$。但历史 Token 的 $K,V$ 已在每一层中缓存，无需重新从头计算：
 
@@ -153,6 +163,14 @@ $$
 
 这里的 $5Ld^2$ 来自 GQA：Q 与 output projection 各为 $2Ld^2$；K、V 的总投影维度只有 $d/4$，合计再增加 $Ld^2$。合计约 $962.1$ GFLOPs/层，32 层约为 $30.8$ TFLOPs。这说明在这个长度下，MLP 仍是最大的单项；attention 已不可忽略，但尚未超过 MLP。
 
+<figure class="text-center mt-3 mb-4">
+  <img
+    src="/assets/images/posts/llm-inference/prefill-flops-breakdown.svg"
+    alt="Llama 3.1 8B 在序列长度 2048 时一次 Prefill 的计算量构成：SwiGLU MLP 约占 75%，QKV 与输出投影约占 18%，attention 约占 7%。"
+    style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 2：Llama 3.1 8B 在 L=2048 时一次 Prefill 的计算量构成（32 层合计）。</figcaption>
+</figure>
+
 LM Head 的口径需要单独说明。设词表大小为 $V$：在线生成的 Prefill 只需要最后一个位置的 logits，因此 LM Head 的计算量为 $O(dV)$；训练或通用前向若要返回全部 $L$ 个位置的 logits，则会变为 $O(LdV)$。本文讨论前一种在线推理路径，输入 embedding 也只是在当前 Token 上做 lookup。对这个 Llama 3.1 8B 例子，LM Head 约为 $2\times4096\times128256\approx1.05$ GFLOPs，相对 $30.8$ TFLOPs 的 Transformer block 可以忽略。
 
 同一配置下，GQA 的 KV Cache 约为：
@@ -197,7 +215,7 @@ $$
     src="/assets/images/posts/llm-inference/roofline-model.svg"
     alt="Roofline 模型：性能在低算术强度时受显存带宽限制并沿斜线增长；达到计算峰值后形成水平平台。"
     style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 1：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定，两者的交点即屋脊点。</figcaption>
+  <figcaption class="text-muted mt-2">图 3：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定，两者的交点即屋脊点。</figcaption>
 </figure>
 
 为与后文的公开基准对齐，以下统一采用 H200 SXM。它与 H100 同属 Hopper 架构，dense BF16 计算峰值相同，这里取 $989$ TFLOPS 与 $4.8$ TB/s HBM3e 带宽，不采用厂商表中“开启结构化稀疏”时的更高峰值。[5] 上述 2048-token Prefill 的纯计算下界约为：

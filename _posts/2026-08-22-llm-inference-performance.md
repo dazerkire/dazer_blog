@@ -53,7 +53,7 @@ $$
 
 图中的 **Causal Self-Attention** 表示当前位置只能关注已有的 Token，不能读取未来 Token；这正是生成必须逐步进行的原因。模型经过多层 Decoder Block 后，由 LM Head 得到词表上每个候选 Token 的分数（logits），再由采样策略选出下一个 Token。生成第二个及之后的 Token 时，历史 Token 的 Key 和 Value 会以 KV Cache 的形式被复用；它的具体内存与性能问题留到后续文章展开。
 
-假设第一个输出 Token 对应 `Hello`，它会被追加到上下文；模型随后才能预测下一个 Token。这个过程不断重复，最终形成完整回复：
+假设第一个输出 Token 对应 `Hello`，它会被追加到上下文；模型随后才能预测下一个 Token。这个过程不断重复，最终形成完整回复。
 
 这个循环可以概括为：处理已有上下文 → 预测并选择一个 Token → 将它追加到上下文 → 继续下一轮，直到生成结束。
 
@@ -169,6 +169,10 @@ Prefill 会处理已经确定的完整 Prompt，得到预测第一个输出 Toke
 ## 如何描述一次推理的性能
 
 同一个服务可以很快返回第一个字，却在后续生成中断断续续；也可以首字稍慢，但在高并发下完成更多工作。因此，“快”必须被拆成对应不同阶段的指标。
+
+![一次推理请求的时间轴：请求发出后经过应用准备与排队、Prefill，首 Token 到达即 TTFT；随后逐 Token 生成，相邻 Token 的间隔为 ITL；从请求发出到完整响应接收完成为端到端延迟。](/assets/images/posts/llm-inference/metrics-timeline.svg)
+
+*图 3：TTFT、ITL 与端到端延迟在一次请求时间轴上的位置。*{: .text-center .d-block .mt-2 .mb-4 }
 
 **TTFT：第一个 Token 何时出现。**
 

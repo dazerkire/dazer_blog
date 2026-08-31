@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
+  <title id="title">Prefill 的 GEMM 与 Decode 的 GEMV</title>
+  <desc id="desc">左：Prefill 中 L 个 token 的激活矩阵乘权重矩阵，同一列权重被所有 token 复用；右：Decode 中单个 token 的向量乘权重矩阵，每个权重只被使用一次。</desc>
+  <style>
+    .bg { fill: #fbfcfe; }
+    .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .mlabel { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .op { fill: #344054; font: 600 30px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .em-b { fill: #1d4ed8; font: 600 21px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .em-o { fill: #c2410c; font: 600 21px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .small { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .label { fill: #344054; font: 500 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .grid-b { stroke: #2563eb; stroke-width: 1.5; fill: none; }
+    .grid-o { stroke: #f97316; stroke-width: 1.5; fill: none; }
+    .grid-g { stroke: #16a34a; stroke-width: 1.5; fill: none; }
+    .flow { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 6; fill: none; }
+  </style>
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1120" height="450" rx="20"/>
+
+  <!-- ===== left panel: Prefill GEMM ===== -->
+  <text class="panel" x="90" y="55">Prefill：GEMM（矩阵 × 矩阵）</text>
+
+  <text class="mlabel" x="142" y="104" text-anchor="middle">X（L×d）</text>
+  <path class="grid-b" d="M90 115 h104 M90 141 h104 M90 167 h104 M90 193 h104 M90 219 h104 M90 245 h104 M90 115 v130 M116 115 v130 M142 115 v130 M168 115 v130 M194 115 v130"/>
+
+  <text class="op" x="215" y="190">×</text>
+
+  <text class="mlabel" x="298" y="117" text-anchor="middle">W（d×d）</text>
+  <rect x="246" y="128" width="26" height="104" fill="#f97316"/>
+  <path class="grid-o" d="M246 128 h104 M246 154 h104 M246 180 h104 M246 206 h104 M246 232 h104 M246 128 v104 M272 128 v104 M298 128 v104 M324 128 v104 M350 128 v104"/>
+
+  <text class="op" x="368" y="190">=</text>
+
+  <text class="mlabel" x="452" y="104" text-anchor="middle">输出（L×d）</text>
+  <rect x="400" y="115" width="26" height="130" fill="#16a34a"/>
+  <path class="grid-g" d="M400 115 h104 M400 141 h104 M400 167 h104 M400 193 h104 M400 219 h104 M400 245 h104 M400 115 v130 M426 115 v130 M452 115 v130 M478 115 v130 M504 115 v130"/>
+
+  <path class="flow" marker-end="url(#arr2)" d="M262 232 C 300 260, 360 150, 397 130"/>
+  <path class="flow" marker-end="url(#arr2)" d="M262 232 C 310 250, 360 200, 397 182"/>
+  <path class="flow" marker-end="url(#arr2)" d="M262 232 C 320 245, 370 240, 397 238"/>
+
+  <text class="em-b" x="90" y="306">同一列权重被 L 个 token 复用</text>
+  <text class="small" x="90" y="336">权重读一次，参与 L 次乘加</text>
+
+  <!-- divider -->
+  <line x1="575" y1="40" x2="575" y2="360" stroke="#dce3ea" stroke-width="1.5" stroke-dasharray="5 8"/>
+
+  <!-- ===== right panel: Decode GEMV ===== -->
+  <text class="panel" x="640" y="55">Decode：GEMV（矩阵 × 向量）</text>
+
+  <text class="mlabel" x="692" y="156" text-anchor="middle">x（1×d）</text>
+  <path class="grid-b" d="M640 167 h104 M640 193 h104 M640 167 v26 M666 167 v26 M692 167 v26 M718 167 v26 M744 167 v26"/>
+
+  <text class="op" x="762" y="190">×</text>
+
+  <text class="mlabel" x="844" y="117" text-anchor="middle">W（d×d）</text>
+  <rect x="792" y="128" width="26" height="104" fill="#f97316"/>
+  <path class="grid-o" d="M792 128 h104 M792 154 h104 M792 180 h104 M792 206 h104 M792 232 h104 M792 128 v104 M818 128 v104 M844 128 v104 M870 128 v104 M896 128 v104"/>
+
+  <text class="op" x="914" y="190">=</text>
+
+  <text class="mlabel" x="996" y="156" text-anchor="middle">xW（1×d）</text>
+  <rect x="944" y="167" width="26" height="26" fill="#16a34a"/>
+  <path class="grid-g" d="M944 167 h104 M944 193 h104 M944 167 v26 M970 167 v26 M996 167 v26 M1022 167 v26 M1048 167 v26"/>
+
+  <path class="flow" marker-end="url(#arr2)" d="M808 232 C 850 250, 900 210, 941 188"/>
+
+  <text class="em-o" x="640" y="306">每个权重只服务 1 个新 token</text>
+  <text class="small" x="640" y="336">权重读一次，只使用一次</text>
+
+  <!-- bottom note -->
+  <text class="label" x="560" y="412" text-anchor="middle">两个阶段要读取的权重字节数相同，差别全在复用次数 —— 即算术强度</text>
+</svg>

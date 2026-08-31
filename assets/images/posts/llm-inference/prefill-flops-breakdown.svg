@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="330" viewBox="0 0 1120 330" role="img" aria-labelledby="title desc">
+  <title id="title">Prefill 计算量构成</title>
+  <desc id="desc">Llama 3.1 8B 在 L=2048 时一次 Prefill 约 30.8 TFLOPs：SwiGLU MLP 约 23.1（75%），QKV 与输出投影约 5.5（18%），attention 约 2.2（7%）。</desc>
+  <style>
+    .bg { fill: #fbfcfe; }
+    .title { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .small { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+  </style>
+  <rect class="bg" width="1120" height="330" rx="20"/>
+
+  <text class="title" x="90" y="62">Llama 3.1 8B · L = 2048：一次 Prefill ≈ 30.8 TFLOPs 的构成（32 层合计）</text>
+
+  <!-- stacked bar: 940px wide, MLP 75.0% = 705, QKV+O 17.9% = 168, attn 7.1% = 67 -->
+  <rect x="90" y="100" width="705" height="80" fill="#2563eb"/>
+  <rect x="795" y="100" width="168" height="80" fill="#f97316"/>
+  <rect x="963" y="100" width="67" height="80" fill="#16a34a"/>
+  <line x1="795" y1="100" x2="795" y2="180" stroke="#fbfcfe" stroke-width="3"/>
+  <line x1="963" y1="100" x2="963" y2="180" stroke="#fbfcfe" stroke-width="3"/>
+
+  <text class="in" x="442" y="134" text-anchor="middle">SwiGLU MLP（6Ldm）</text>
+  <text class="in" x="442" y="162" text-anchor="middle">≈ 23.1 TFLOPs · 75%</text>
+
+  <!-- legend for the two narrow segments -->
+  <rect x="90" y="214" width="18" height="18" rx="3" fill="#f97316"/>
+  <text class="small" x="120" y="229">QKV + 输出投影（5Ld²）≈ 5.5 TFLOPs · 18%</text>
+  <rect x="540" y="214" width="18" height="18" rx="3" fill="#16a34a"/>
+  <text class="small" x="570" y="229">attention（4L²d）≈ 2.2 TFLOPs · 7%</text>
+
+  <text class="small" x="90" y="292">attention 的 L² 项随上下文增长最快：L 更大时，它的占比会继续上升。</text>
+</svg>
