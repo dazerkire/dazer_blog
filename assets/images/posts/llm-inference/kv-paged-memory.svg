@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
-  <title id="title">KV Cache 显存管理：连续预留、按需分配的碎片与分页管理</title>
-  <desc id="desc">上图对比按最大长度连续预留造成的浪费与按需分配造成的外部碎片；下图展示分页管理：逻辑块通过 block table 映射到散布在物理显存中的固定大小块，两个请求的相同前缀共享物理块。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="460" viewBox="0 0 1120 460" role="img" aria-labelledby="title desc">
+  <title id="title">分页管理：固定大小的 block 与 block table</title>
+  <desc id="desc">两个请求的逻辑块通过 block table 映射到物理显存中散布的固定大小块；请求 1 与请求 2 的前三个逻辑块指向同一批物理块，前缀共享只存一份。</desc>
   <style>
     .bg { fill: #fbfcfe; }
-    .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
     .lane { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
     .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
     .cell { fill: #344054; font: 500 16px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .strip { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; }
-    .used { fill: #2563eb; }
-    .used2 { fill: #f97316; }
-    .free { fill: url(#hatch); stroke: #cbd5e1; stroke-width: 1.5; }
     .lblock1 { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; }
     .lblock2 { fill: #ffedd5; stroke: #f97316; stroke-width: 2; }
     .p1 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; }
@@ -18,125 +13,86 @@
     .psh { fill: #ddd6fe; stroke: #7c3aed; stroke-width: 2; }
     .po { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1; }
     .pf { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 4 3; }
-    .axis { stroke: #94a3b8; stroke-width: 1.5; }
   </style>
-  <defs>
-    <pattern id="hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <rect width="9" height="9" fill="#f1f5f9"/>
-      <line x1="0" y1="0" x2="0" y2="9" stroke="#cbd5e1" stroke-width="2.5"/>
-    </pattern>
-  </defs>
-  <rect class="bg" width="1120" height="720" rx="20"/>
+  <rect class="bg" width="1120" height="460" rx="20"/>
 
-  <text class="panel" x="150" y="56">朴素方案一：按最大长度连续预留</text>
-  <text class="lane" x="240" y="82" text-anchor="middle">请求1</text>
-  <text class="lane" x="420" y="82" text-anchor="middle">请求2</text>
-  <text class="lane" x="600" y="82" text-anchor="middle">请求3</text>
-  <text class="lane" x="780" y="82" text-anchor="middle">请求4</text>
-  <text class="lane" x="960" y="82" text-anchor="middle">请求5</text>
-  <rect class="strip" x="150" y="92" width="180" height="56"/>
-  <rect class="used" x="150" y="92" width="54" height="56"/>
-  <rect class="strip" x="330" y="92" width="180" height="56"/>
-  <rect class="used" x="330" y="92" width="135" height="56"/>
-  <rect class="strip" x="510" y="92" width="180" height="56"/>
-  <rect class="used" x="510" y="92" width="90" height="56"/>
-  <rect class="strip" x="690" y="92" width="180" height="56"/>
-  <rect class="used" x="690" y="92" width="162" height="56"/>
-  <rect class="strip" x="870" y="92" width="180" height="56"/>
-  <rect class="used" x="870" y="92" width="72" height="56"/>
-  <text class="note" x="150" y="172">每路预留 8192 token（1 GiB），实际用量各不相同——斜纹部分永不写入，但并发上限已被它压低</text>
+  <text class="lane" x="150" y="60">请求 1 的逻辑块（自以为连续）：</text>
+  <rect class="lblock1" x="150" y="72" width="62" height="48" rx="4"/>
+  <rect class="lblock1" x="218" y="72" width="62" height="48" rx="4"/>
+  <rect class="lblock1" x="286" y="72" width="62" height="48" rx="4"/>
+  <rect class="lblock1" x="354" y="72" width="62" height="48" rx="4"/>
+  <rect class="lblock1" x="422" y="72" width="62" height="48" rx="4"/>
+  <rect class="lblock1" x="490" y="72" width="62" height="48" rx="4"/>
+  <text class="cell" x="181" y="93"  text-anchor="middle">块0</text>
+  <text class="cell" x="249" y="93"  text-anchor="middle">块1</text>
+  <text class="cell" x="317" y="93"  text-anchor="middle">块2</text>
+  <text class="cell" x="385" y="93"  text-anchor="middle">块3</text>
+  <text class="cell" x="453" y="93"  text-anchor="middle">块4</text>
+  <text class="cell" x="521" y="93"  text-anchor="middle">块5</text>
+  <text class="cell" x="181" y="113" text-anchor="middle">#3</text>
+  <text class="cell" x="249" y="113" text-anchor="middle">#8</text>
+  <text class="cell" x="317" y="113" text-anchor="middle">#12</text>
+  <text class="cell" x="385" y="113" text-anchor="middle">#15</text>
+  <text class="cell" x="453" y="113" text-anchor="middle">#27</text>
+  <text class="cell" x="521" y="113" text-anchor="middle">#31</text>
 
-  <text class="panel" x="150" y="222">朴素方案二：按需分配 → 外部碎片</text>
-  <rect class="used"  x="150" y="240" width="130" height="56"/>
-  <rect class="free"  x="280" y="240" width="55"  height="56"/>
-  <rect class="used"  x="335" y="240" width="210" height="56"/>
-  <rect class="free"  x="545" y="240" width="30"  height="56"/>
-  <rect class="used"  x="575" y="240" width="95"  height="56"/>
-  <rect class="free"  x="670" y="240" width="150" height="56"/>
-  <rect class="used"  x="820" y="240" width="185" height="56"/>
-  <rect class="free"  x="1005" y="240" width="75" height="56"/>
-  <rect class="used"  x="1080" y="240" width="0" height="56"/>
-  <text class="note" x="150" y="326">请求长短不一、先后进出：空闲总量往往够，但最大连续空洞装不下新请求——显存名义上还有空闲，却已经放不进新的请求</text>
+  <text class="lane" x="150" y="192">请求 2 的逻辑块（前缀相同）：</text>
+  <rect class="lblock2" x="150" y="204" width="62" height="48" rx="4"/>
+  <rect class="lblock2" x="218" y="204" width="62" height="48" rx="4"/>
+  <rect class="lblock2" x="286" y="204" width="62" height="48" rx="4"/>
+  <rect class="lblock2" x="354" y="204" width="62" height="48" rx="4"/>
+  <text class="cell" x="181" y="225" text-anchor="middle">块0</text>
+  <text class="cell" x="249" y="225" text-anchor="middle">块1</text>
+  <text class="cell" x="317" y="225" text-anchor="middle">块2</text>
+  <text class="cell" x="385" y="225" text-anchor="middle">块3</text>
+  <text class="cell" x="181" y="245" text-anchor="middle">#3</text>
+  <text class="cell" x="249" y="245" text-anchor="middle">#8</text>
+  <text class="cell" x="317" y="245" text-anchor="middle">#12</text>
+  <text class="cell" x="385" y="245" text-anchor="middle">#19</text>
 
-  <text class="panel" x="150" y="384">分页管理：固定大小的 block + block table</text>
+  <text class="lane" x="620" y="60">物理显存（固定大小块的池）：</text>
+  <rect class="po"  x="620" y="72" width="46" height="46" rx="4"/> <rect class="po"  x="672" y="72" width="46" height="46" rx="4"/> <rect class="po"  x="724" y="72" width="46" height="46" rx="4"/> <rect class="psh" x="776" y="72" width="46" height="46" rx="4"/>
+  <rect class="po"  x="828" y="72" width="46" height="46" rx="4"/> <rect class="po"  x="880" y="72" width="46" height="46" rx="4"/> <rect class="po"  x="932" y="72" width="46" height="46" rx="4"/> <rect class="po"  x="984" y="72" width="46" height="46" rx="4"/>
+  <rect class="psh" x="620" y="124" width="46" height="46" rx="4"/> <rect class="pf" x="672" y="124" width="46" height="46" rx="4"/> <rect class="po"  x="724" y="124" width="46" height="46" rx="4"/> <rect class="po"  x="776" y="124" width="46" height="46" rx="4"/>
+  <rect class="psh" x="828" y="124" width="46" height="46" rx="4"/> <rect class="pf" x="880" y="124" width="46" height="46" rx="4"/> <rect class="po"  x="932" y="124" width="46" height="46" rx="4"/> <rect class="p1"  x="984" y="124" width="46" height="46" rx="4"/>
+  <rect class="po"  x="620" y="176" width="46" height="46" rx="4"/> <rect class="pf" x="672" y="176" width="46" height="46" rx="4"/> <rect class="po"  x="724" y="176" width="46" height="46" rx="4"/> <rect class="p2"  x="776" y="176" width="46" height="46" rx="4"/>
+  <rect class="po"  x="828" y="176" width="46" height="46" rx="4"/> <rect class="po"  x="880" y="176" width="46" height="46" rx="4"/> <rect class="po"  x="932" y="176" width="46" height="46" rx="4"/> <rect class="pf" x="984" y="176" width="46" height="46" rx="4"/>
+  <rect class="po"  x="620" y="228" width="46" height="46" rx="4"/> <rect class="po"  x="672" y="228" width="46" height="46" rx="4"/> <rect class="po"  x="724" y="228" width="46" height="46" rx="4"/> <rect class="p1"  x="776" y="228" width="46" height="46" rx="4"/>
+  <rect class="po"  x="828" y="228" width="46" height="46" rx="4"/> <rect class="po"  x="880" y="228" width="46" height="46" rx="4"/> <rect class="po"  x="932" y="228" width="46" height="46" rx="4"/> <rect class="p1"  x="984" y="228" width="46" height="46" rx="4"/>
+  <text class="cell" x="643" y="100" text-anchor="middle">0</text>
+  <text class="cell" x="695" y="100" text-anchor="middle">1</text>
+  <text class="cell" x="747" y="100" text-anchor="middle">2</text>
+  <text class="cell" x="799" y="100" text-anchor="middle">3</text>
+  <text class="cell" x="851" y="100" text-anchor="middle">4</text>
+  <text class="cell" x="903" y="100" text-anchor="middle">5</text>
+  <text class="cell" x="955" y="100" text-anchor="middle">6</text>
+  <text class="cell" x="1007" y="100" text-anchor="middle">7</text>
+  <text class="cell" x="643" y="152" text-anchor="middle">8</text>
+  <text class="cell" x="695" y="152" text-anchor="middle">9</text>
+  <text class="cell" x="747" y="152" text-anchor="middle">10</text>
+  <text class="cell" x="799" y="152" text-anchor="middle">11</text>
+  <text class="cell" x="851" y="152" text-anchor="middle">12</text>
+  <text class="cell" x="903" y="152" text-anchor="middle">13</text>
+  <text class="cell" x="955" y="152" text-anchor="middle">14</text>
+  <text class="cell" x="1007" y="152" text-anchor="middle">15</text>
+  <text class="cell" x="643" y="204" text-anchor="middle">16</text>
+  <text class="cell" x="695" y="204" text-anchor="middle">17</text>
+  <text class="cell" x="747" y="204" text-anchor="middle">18</text>
+  <text class="cell" x="799" y="204" text-anchor="middle">19</text>
+  <text class="cell" x="851" y="204" text-anchor="middle">20</text>
+  <text class="cell" x="903" y="204" text-anchor="middle">21</text>
+  <text class="cell" x="955" y="204" text-anchor="middle">22</text>
+  <text class="cell" x="1007" y="204" text-anchor="middle">23</text>
+  <text class="cell" x="643" y="256" text-anchor="middle">24</text>
+  <text class="cell" x="695" y="256" text-anchor="middle">25</text>
+  <text class="cell" x="747" y="256" text-anchor="middle">26</text>
+  <text class="cell" x="799" y="256" text-anchor="middle">27</text>
+  <text class="cell" x="851" y="256" text-anchor="middle">28</text>
+  <text class="cell" x="903" y="256" text-anchor="middle">29</text>
+  <text class="cell" x="955" y="256" text-anchor="middle">30</text>
+  <text class="cell" x="1007" y="256" text-anchor="middle">31</text>
 
-  <text class="lane" x="150" y="414">请求 1 的逻辑块（自以为连续）：</text>
-  <rect class="lblock1" x="150" y="424" width="62" height="48" rx="4"/>
-  <rect class="lblock1" x="218" y="424" width="62" height="48" rx="4"/>
-  <rect class="lblock1" x="286" y="424" width="62" height="48" rx="4"/>
-  <rect class="lblock1" x="354" y="424" width="62" height="48" rx="4"/>
-  <rect class="lblock1" x="422" y="424" width="62" height="48" rx="4"/>
-  <rect class="lblock1" x="490" y="424" width="62" height="48" rx="4"/>
-  <text class="cell" x="181" y="445" text-anchor="middle">块0</text>
-  <text class="cell" x="249" y="445" text-anchor="middle">块1</text>
-  <text class="cell" x="317" y="445" text-anchor="middle">块2</text>
-  <text class="cell" x="385" y="445" text-anchor="middle">块3</text>
-  <text class="cell" x="453" y="445" text-anchor="middle">块4</text>
-  <text class="cell" x="521" y="445" text-anchor="middle">块5</text>
-  <text class="cell" x="181" y="465" text-anchor="middle">#3</text>
-  <text class="cell" x="249" y="465" text-anchor="middle">#8</text>
-  <text class="cell" x="317" y="465" text-anchor="middle">#12</text>
-  <text class="cell" x="385" y="465" text-anchor="middle">#15</text>
-  <text class="cell" x="453" y="465" text-anchor="middle">#27</text>
-  <text class="cell" x="521" y="465" text-anchor="middle">#31</text>
-
-  <text class="lane" x="150" y="508">请求 2 的逻辑块（前缀相同）：</text>
-  <rect class="lblock2" x="150" y="518" width="62" height="48" rx="4"/>
-  <rect class="lblock2" x="218" y="518" width="62" height="48" rx="4"/>
-  <rect class="lblock2" x="286" y="518" width="62" height="48" rx="4"/>
-  <rect class="lblock2" x="354" y="518" width="62" height="48" rx="4"/>
-  <text class="cell" x="181" y="539" text-anchor="middle">块0</text>
-  <text class="cell" x="249" y="539" text-anchor="middle">块1</text>
-  <text class="cell" x="317" y="539" text-anchor="middle">块2</text>
-  <text class="cell" x="385" y="539" text-anchor="middle">块3</text>
-  <text class="cell" x="181" y="559" text-anchor="middle">#3</text>
-  <text class="cell" x="249" y="559" text-anchor="middle">#8</text>
-  <text class="cell" x="317" y="559" text-anchor="middle">#12</text>
-  <text class="cell" x="385" y="559" text-anchor="middle">#19</text>
-
-  <text class="lane" x="620" y="414">物理显存（固定大小块的池）：</text>
-  <rect class="po" x="620" y="424" width="46" height="46" rx="4"/> <rect class="po" x="672" y="424" width="46" height="46" rx="4"/> <rect class="po" x="724" y="424" width="46" height="46" rx="4"/> <rect class="psh" x="776" y="424" width="46" height="46" rx="4"/>
-  <rect class="po" x="828" y="424" width="46" height="46" rx="4"/> <rect class="po" x="880" y="424" width="46" height="46" rx="4"/> <rect class="po" x="932" y="424" width="46" height="46" rx="4"/> <rect class="po" x="984" y="424" width="46" height="46" rx="4"/>
-  <rect class="p1" x="620" y="476" width="46" height="46" rx="4"/> <rect class="pf" x="672" y="476" width="46" height="46" rx="4"/> <rect class="po" x="724" y="476" width="46" height="46" rx="4"/> <rect class="po" x="776" y="476" width="46" height="46" rx="4"/>
-  <rect class="psh" x="828" y="476" width="46" height="46" rx="4"/> <rect class="pf" x="880" y="476" width="46" height="46" rx="4"/> <rect class="po" x="932" y="476" width="46" height="46" rx="4"/> <rect class="po" x="984" y="476" width="46" height="46" rx="4"/>
-  <rect class="po" x="620" y="528" width="46" height="46" rx="4"/> <rect class="pf" x="672" y="528" width="46" height="46" rx="4"/> <rect class="psh" x="724" y="528" width="46" height="46" rx="4"/> <rect class="p1" x="776" y="528" width="46" height="46" rx="4"/>
-  <rect class="po" x="828" y="528" width="46" height="46" rx="4"/> <rect class="p2" x="880" y="528" width="46" height="46" rx="4"/> <rect class="po" x="932" y="528" width="46" height="46" rx="4"/> <rect class="pf" x="984" y="528" width="46" height="46" rx="4"/>
-  <rect class="po" x="620" y="580" width="46" height="46" rx="4"/> <rect class="p2" x="672" y="580" width="46" height="46" rx="4"/> <rect class="po" x="724" y="580" width="46" height="46" rx="4"/> <rect class="p1" x="776" y="580" width="46" height="46" rx="4"/>
-  <rect class="p1" x="828" y="580" width="46" height="46" rx="4"/> <rect class="po" x="880" y="580" width="46" height="46" rx="4"/> <rect class="pf" x="932" y="580" width="46" height="46" rx="4"/> <rect class="p1" x="984" y="580" width="46" height="46" rx="4"/>
-  <text class="cell" x="643" y="452" text-anchor="middle">0</text>
-  <text class="cell" x="695" y="452" text-anchor="middle">1</text>
-  <text class="cell" x="747" y="452" text-anchor="middle">2</text>
-  <text class="cell" x="799" y="452" text-anchor="middle">3</text>
-  <text class="cell" x="851" y="452" text-anchor="middle">4</text>
-  <text class="cell" x="903" y="452" text-anchor="middle">5</text>
-  <text class="cell" x="955" y="452" text-anchor="middle">6</text>
-  <text class="cell" x="1007" y="452" text-anchor="middle">7</text>
-  <text class="cell" x="643" y="504" text-anchor="middle">8</text>
-  <text class="cell" x="695" y="504" text-anchor="middle">9</text>
-  <text class="cell" x="747" y="504" text-anchor="middle">10</text>
-  <text class="cell" x="799" y="504" text-anchor="middle">11</text>
-  <text class="cell" x="851" y="504" text-anchor="middle">12</text>
-  <text class="cell" x="903" y="504" text-anchor="middle">13</text>
-  <text class="cell" x="955" y="504" text-anchor="middle">14</text>
-  <text class="cell" x="1007" y="504" text-anchor="middle">15</text>
-  <text class="cell" x="643" y="556" text-anchor="middle">16</text>
-  <text class="cell" x="695" y="556" text-anchor="middle">17</text>
-  <text class="cell" x="747" y="556" text-anchor="middle">18</text>
-  <text class="cell" x="799" y="556" text-anchor="middle">19</text>
-  <text class="cell" x="851" y="556" text-anchor="middle">20</text>
-  <text class="cell" x="903" y="556" text-anchor="middle">21</text>
-  <text class="cell" x="955" y="556" text-anchor="middle">22</text>
-  <text class="cell" x="1007" y="556" text-anchor="middle">23</text>
-  <text class="cell" x="643" y="608" text-anchor="middle">24</text>
-  <text class="cell" x="695" y="608" text-anchor="middle">25</text>
-  <text class="cell" x="747" y="608" text-anchor="middle">26</text>
-  <text class="cell" x="799" y="608" text-anchor="middle">27</text>
-  <text class="cell" x="851" y="608" text-anchor="middle">28</text>
-  <text class="cell" x="903" y="608" text-anchor="middle">29</text>
-  <text class="cell" x="955" y="608" text-anchor="middle">30</text>
-  <text class="cell" x="1007" y="608" text-anchor="middle">31</text>
-
-  <text class="note" x="150" y="60">　</text>
-  <text class="note" x="150" y="666">逻辑块号下方的 #n 即 block table 中记录的物理块号——物理块可以散布各处；请求 1 与请求 2 的前三个块指向同一批物理块：前缀共享，只存一份</text>
-  <text class="note" x="620" y="666">图例：浅蓝 = 请求 1 独占　浅橙 = 请求 2 独占　紫 = 共享　灰 = 其他请求　白虚线 = 空闲</text>
+  <text class="note" x="150" y="340">图例：浅蓝 = 请求 1 独占　浅橙 = 请求 2 独占　紫 = 共享　灰 = 其他请求　白虚线 = 空闲　每块 = 16 token</text>
+  <text class="note" x="150" y="388">逻辑块下方的 #n 是 block table 记录的物理块号：逻辑上连续，物理上散布各处</text>
+  <text class="note" x="150" y="418">请求 1 与请求 2 的前三个逻辑块指向同一批物理块——前缀共享，只存一份</text>
 </svg>
