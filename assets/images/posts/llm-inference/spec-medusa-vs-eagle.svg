@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
+<title id="title">并行盲猜与串行特征链的对比</title>
+<desc id="desc">左：Medusa 的三个候选都从同一个隐藏状态 h 出发，预测未来位置时看不到彼此的前提，接受率低但无 draft 步。右：EAGLE 与 MTP 的 draft 头在特征层串行推进，第 i 个候选以第 i-1 个为条件，接受率高，每步付 0.31 ms。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
+    .axis { stroke: #344054; stroke-width: 2.5; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .tick { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .ser { font: 700 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .edg { stroke: #94a3b8; stroke-width: 2; fill: none; }
+  </style>
+<rect class="bg" width="1120" height="560" rx="20"/>
+<text class="label" x="40" y="80">Medusa：并行起草，候选互相看不见</text><circle cx="130" cy="250" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/><text class="on" x="130" y="257" text-anchor="middle">h</text><text class="muted" x="130" y="300" text-anchor="middle">同一前向的隐状态</text><path fill="none" stroke="#2563eb" stroke-width="2.5" d="M152 240 L287.259 136.677"/>
+<path fill="#2563eb" d="M296 130 L289.312,142.66 L282.027,133.123 Z"/>
+<rect x="296" y="104" width="168" height="52" rx="8" fill="#2563eb"/>
+<text class="in" x="380" y="136" text-anchor="middle">+1：真输出</text>
+<path fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 6" d="M152 250 L285 250"/>
+<path fill="#f97316" d="M296 250 L283,256 L283,244 Z"/>
+<rect x="296" y="224" width="168" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="380" y="256" text-anchor="middle">+2：候选</text>
+<path fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 6" d="M152 262 L287.259 365.323"/>
+<path fill="#f97316" d="M296 372 L282.027,368.877 L289.312,359.34 Z"/>
+<rect x="296" y="346" width="168" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="380" y="378" text-anchor="middle">+3：候选</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 7" d="M478 224 V 398"/><text class="muted" x="490" y="300">前提（+1 的</text><text class="muted" x="490" y="324">Token）尚未</text><text class="muted" x="490" y="348">产生</text><text class="note" x="40" y="450">draft 成本 0；候选为并行盲猜，接受率低，上限 E = 1 + 头数</text><text class="label" x="580" y="80">EAGLE / MTP：特征层串行起草</text><rect x="600" y="200" width="150" height="52" rx="8" fill="#2563eb"/>
+<text class="in" x="675" y="232" text-anchor="middle">主干 → h</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M750 226 L777 226"/>
+<path fill="#344054" d="M788 226 L775,232 L775,220 Z"/>
+<rect x="788" y="200" width="150" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="863" y="232" text-anchor="middle">draft 头</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M938 226 L965 226"/>
+<path fill="#344054" d="M976 226 L963,232 L963,220 Z"/>
+<rect x="976" y="200" width="114" height="52" rx="8" fill="#7c3aed"/>
+<text class="in" x="1033" y="232" text-anchor="middle">LM Head</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M1033 252 L1033 319"/>
+<path fill="#f97316" d="M1033 330 L1027,317 L1039,317 Z"/>
+<rect x="770" y="336" width="48" height="42" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="794" y="362" text-anchor="middle">c1</text><path fill="none" stroke="#f97316" stroke-width="2" d="M820 357 L823 357"/>
+<path fill="#f97316" d="M834 357 L821,363 L821,351 Z"/>
+<rect x="838" y="336" width="48" height="42" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="862" y="362" text-anchor="middle">c2</text><path fill="none" stroke="#f97316" stroke-width="2" d="M888 357 L891 357"/>
+<path fill="#f97316" d="M902 357 L889,363 L889,351 Z"/>
+<rect x="906" y="336" width="48" height="42" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="930" y="362" text-anchor="middle">c3</text><path fill="none" stroke="#f97316" stroke-width="2" d="M956 357 L959 357"/>
+<path fill="#f97316" d="M970 357 L957,363 L957,351 Z"/>
+<rect x="974" y="336" width="48" height="42" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="998" y="362" text-anchor="middle">c4</text><path fill="none" stroke="#f97316" stroke-width="2" d="M794 336 V 306 H 838 V 260"/><path fill="#f97316" d="M838 260 l-6 11 l12 0 z"/><text class="blk" x="770" y="316">e 回馈，下一步</text><text class="note" x="580" y="450">每步 0.31 ms × k；候选串行不盲，门槛与实测落点均为各方案最优</text></svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">投机解码设计空间：四类候选来源</title>
+<desc id="desc">四类候选来源的推理时结构：外部小模型（串行起草后一次验证）、模型自身跳层（前 M 层加 LM Head 早期退出）、Medusa 附加头（同一个 h 并行出多个未来位置的候选）、EAGLE 与 MTP 特征层头（一层 draft 模块串行推进，复用 LM Head）。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
+    .axis { stroke: #344054; stroke-width: 2.5; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .tick { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .ser { font: 700 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .edg { stroke: #94a3b8; stroke-width: 2; fill: none; }
+  </style>
+<rect class="bg" width="1120" height="640" rx="20"/>
+<text class="label" x="40" y="100">① 外部小模型（第五篇基线）</text><rect x="60" y="130" width="170" height="56" rx="8" fill="#f97316"/>
+<text class="in" x="145" y="164" text-anchor="middle">draft 1B</text>
+<text class="blk" x="145" y="212" text-anchor="middle">串行 4 步 × 0.53 ms</text><path fill="none" stroke="#344054" stroke-width="2.5" d="M230 158 L289 158"/>
+<path fill="#344054" d="M300 158 L287,164 L287,152 Z"/>
+<rect x="300" y="130" width="180" height="56" rx="8" fill="#7c3aed"/>
+<text class="in" x="390" y="164" text-anchor="middle">target 8B 验证</text>
+<text class="blk" x="390" y="212" text-anchor="middle">一次前向 3.2 ms</text><text class="note" x="60" y="300">额外 2.5 GB 显存；临界 α ≈ 0.41</text><text class="label" x="580" y="100">② 模型自身：跳层起草</text><rect x="640" y="125" width="84" height="130" rx="8" fill="#dbeafe"/><line x1="646" y1="147" x2="718" y2="147" stroke="#dce3ea" stroke-width="2"/><line x1="646" y1="169" x2="718" y2="169" stroke="#dce3ea" stroke-width="2"/><line x1="646" y1="191" x2="718" y2="191" stroke="#dce3ea" stroke-width="2"/><line x1="646" y1="213" x2="718" y2="213" stroke="#dce3ea" stroke-width="2"/><line x1="646" y1="235" x2="718" y2="235" stroke="#dce3ea" stroke-width="2"/><rect x="640" y="234" width="84" height="21" rx="6" fill="#ffedd5"/><text class="blk" x="628" y="196" text-anchor="end">32 层主干</text><text class="muted" x="628" y="248" text-anchor="end">前 M 层</text><path fill="none" stroke="#f97316" stroke-width="2.5" d="M724 245 L777 245"/>
+<path fill="#f97316" d="M788 245 L775,251 L775,239 Z"/>
+<rect x="788" y="218" width="168" height="52" rx="8" fill="#ffedd5"/>
+<text class="on" x="872" y="250" text-anchor="middle">LM Head → 候选链</text>
+<path fill="none" stroke="#7c3aed" stroke-width="2.5" d="M724 140 L777 140"/>
+<path fill="#7c3aed" d="M788 140 L775,146 L775,134 Z"/>
+<rect x="788" y="113" width="168" height="52" rx="8" fill="#ddd6fe"/>
+<text class="on" x="872" y="145" text-anchor="middle">完整 32 层 → 验证</text>
+<text class="note" x="580" y="300">0 显存 0 维护；M=8 每步 0.96 ms</text><text class="label" x="40" y="380">③ 附加头：Medusa</text><rect x="60" y="430" width="150" height="56" rx="8" fill="#2563eb"/>
+<text class="in" x="135" y="464" text-anchor="middle">主干 32 层</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M210 458 L241 458"/>
+<path fill="#344054" d="M252 458 L239,464 L239,452 Z"/>
+<circle cx="272" cy="458" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/><text class="on" x="272" y="465" text-anchor="middle">h</text><path fill="none" stroke="#2563eb" stroke-width="2.5" d="M291 448 L322.916 426.204"/>
+<path fill="#2563eb" d="M332 420 L324.648,432.286 L317.881,422.377 Z"/>
+<rect x="332" y="396" width="118" height="48" rx="8" fill="#2563eb"/>
+<text class="in" x="391" y="426" text-anchor="middle">LM Head +1</text>
+<path fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 6" d="M291 458 L321 458"/>
+<path fill="#f97316" d="M332 458 L319,464 L319,452 Z"/>
+<rect x="332" y="434" width="118" height="48" rx="8" fill="#f97316"/>
+<text class="in" x="391" y="464" text-anchor="middle">头 1：+2</text>
+<path fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 6" d="M291 468 L322.916 489.796"/>
+<path fill="#f97316" d="M332 496 L317.881,493.623 L324.648,483.714 Z"/>
+<rect x="332" y="472" width="118" height="48" rx="8" fill="#f97316"/>
+<text class="in" x="391" y="502" text-anchor="middle">头 2：+3</text>
+<text class="muted" x="462" y="480">未见过前驱</text><text class="note" x="60" y="580">draft 步时 0；每步开销随词表增长（2 头约 +14%）</text><text class="note" x="580" y="580">每步 0.31 ms；额外 1.5 GB；MTP 为训练内置</text><text class="label" x="580" y="380">④ 特征层头：EAGLE / MTP</text><rect x="600" y="430" width="140" height="56" rx="8" fill="#2563eb"/>
+<text class="in" x="670" y="464" text-anchor="middle">主干 32 层</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M740 458 L767 458"/>
+<path fill="#344054" d="M778 458 L765,464 L765,452 Z"/>
+<rect x="778" y="432" width="152" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="854" y="464" text-anchor="middle">draft 头（一层）</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M930 458 L957 458"/>
+<path fill="#344054" d="M968 458 L955,464 L955,452 Z"/>
+<rect x="968" y="432" width="112" height="52" rx="8" fill="#7c3aed"/>
+<text class="in" x="1024" y="464" text-anchor="middle">LM Head</text>
+<rect x="782" y="538" width="46" height="40" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><path fill="none" stroke="#f97316" stroke-width="2" d="M830 558 L835 558"/>
+<path fill="#f97316" d="M846 558 L833,564 L833,552 Z"/>
+<rect x="848" y="538" width="46" height="40" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><path fill="none" stroke="#f97316" stroke-width="2" d="M896 558 L901 558"/>
+<path fill="#f97316" d="M912 558 L899,564 L899,552 Z"/>
+<rect x="914" y="538" width="46" height="40" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><path fill="none" stroke="#f97316" stroke-width="2" d="M962 558 L967 558"/>
+<path fill="#f97316" d="M978 558 L965,564 L965,552 Z"/>
+<rect x="980" y="538" width="46" height="40" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><path fill="none" stroke="#f97316" stroke-width="2" d="M1026 530 L1024.5 496.989"/>
+<path fill="#f97316" d="M1024 486 L1030.58,498.714 L1018.6,499.259 Z"/>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M805 538 V 508 H 854 V 486"/><path fill="#f97316" d="M854 486 l-6 11 l12 0 z"/><text class="blk" x="600" y="616">候选串行反馈：每个候选以前一个为条件</text></svg>
