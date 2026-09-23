@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="380" viewBox="0 0 1120 380" role="img" aria-labelledby="title desc">
+<title id="title">DSpark 的置信调度验证</title>
+<desc id="desc">DSpark 按估计的前缀存活概率逐请求裁剪验证长度：置信边界之前的候选正常验证，之后的后缀按存活概率舍弃，不浪费 batch 容量；验证长度成为可调度量。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  </style>
+<rect class="bg" width="1120" height="380" rx="20"/>
+<text class="label" x="60" y="70">DSpark：按置信裁剪验证长度</text><rect x="100" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="135" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="170" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="205" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="240" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="275" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="310" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="345" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="380" y="130" width="32" height="32" rx="4" fill="#7c3aed"/><rect x="415" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="450" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="485" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="520" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="555" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="590" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><rect x="625" y="130" width="32" height="32" rx="4" fill="#ddd6fe"/><path fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 6" d="M413 108 V 178"/><text class="muted" x="413" y="98" text-anchor="middle">置信边界</text><text class="blk" x="250" y="192" text-anchor="middle">验证</text><text class="blk" x="570" y="192" text-anchor="middle">按存活概率裁掉</text><text class="note" x="100" y="270">半自回归起草：并行主干 + 轻量串行模块（修并行盲猜）</text><text class="note" x="100" y="302">相对 MTP-1 基线：同吞吐下每用户 +60–85%（DeepSeek-V4 线上）</text><text class="note" x="100" y="334">验证长度成为可调度量（第七篇展开）</text></svg>

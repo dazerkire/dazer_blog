@@ -41,7 +41,9 @@
      跳层（LM Head 固定项、α(M) 与门槛两条曲线、实测 ≤1.99x）、Medusa（并行盲猜、每步开销随词表走、门槛 1.14）、
      EAGLE 与 MTP（0.31 ms/步、门槛 0.28 命中最高、谱系时间线、训练内置）；链与树（树掩码、约 196 行免费、
      top-k 覆盖率 β）；DFlash（块扩散，draft 成本对 k 平坦）与 DSpark（验证调度，第七篇钩子）。
-   - 配图 5 张：设计空间总览、Medusa vs EAGLE、链 vs 树、块起草与验证裁剪、成本构成与盈亏平衡。
+   - 配图 7 张：跳层、Medusa、EAGLE/MTP 三张机制图，链 vs 树，DFlash、DSpark 各一张，成本构成与盈亏平衡。
+   - 另含「各家在用什么」：DeepSeek（MTP + DSpark）、智谱 GLM-4.5（MTP 层）、OpenAI gpt-oss（MTP）、
+     Google（Gemma 4 MTP）、Anthropic（无披露）的公开证据分级。
 
 ## 后续文章
 

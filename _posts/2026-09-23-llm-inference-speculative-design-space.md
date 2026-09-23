@@ -15,12 +15,7 @@ tags: [LLM, 在线推理, 投机解码, Medusa, EAGLE, MTP]
 
 回顾第五篇的账：一轮 = $k$ 次 draft 步 + 一次验证前向，$T_{\text{round}} = k\,T_{\text{draft}} + 3.2$ ms；产出 $E[N]$ 由接受率决定；加速比为 1 的条件是 $E[N] = T_{\text{round}}/3.2$，这个值记作盈亏平衡 $E^{\ast}$，它越低，方案对接受率越宽容。Medusa 一类还会引入第三项：随每步固定收取的附加头开销。
 
-「候选从哪来」的结构性答案有四类（图 1，其中外部小模型是第五篇的基线）；另有一类零结构的来源，没有任何机制可画。下一节从它开始：成本为零的一端，是整个空间的原点。
-
-<figure class="text-center mt-3 mb-4">
-  <img src="/assets/images/posts/llm-inference/spec-design-space-overview.svg" alt="四类候选来源的推理时结构：外部小模型（串行起草后一次验证）、模型自身跳层（前 M 层加 LM Head 早期退出）、Medusa 附加头（同一个 h 并行出多个未来位置的候选）、EAGLE 与 MTP 特征层头（一层 draft 模块串行推进，复用 LM Head）。" style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 1：四类候选来源的推理时结构（面板 ③④ 改绘自 Medusa [2] 与 EAGLE [3] 的结构图）。每面板下方是对应的成本特征。</figcaption>
-</figure>
+「候选从哪来」的结构性答案有四类：外部小模型是第五篇的基线，跳层、附加头、特征层头三类在各自小节配机制图；另有一类零结构的来源，没有任何机制可画。下一节从它开始：成本为零的一端，是整个空间的原点。
 
 与「来源」正交的一维是**形状**：候选排成一条链，还是一棵树。这一维同样由成本公式决定，第六节单独讲。
 
@@ -40,6 +35,11 @@ $$
 
 从零成本往上一档，回到模型本身。这一类回答的问题是：没有兄弟小模型时怎么办。答案是根本不引入新模型，用 target 自己的前几层起草。draft 路径 = 主干前 $M$ 层 + LM Head，后面的层不读；验证路径 = 完整 32 层（Draft & Verify 是这个思路的代表 [1]）。
 
+<figure class="text-center mt-3 mb-4">
+  <img src="/assets/images/posts/llm-inference/spec-layer-skip.svg" alt="跳层起草：draft 路径只读主干前 M 层加 LM Head，早期退出产出候选链；验证路径走完整 32 层。LM Head 是与 M 无关的固定项，M=8 时占每步字节的 23%。" style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 1：跳层起草。draft 路径只读前 $M$ 层与 LM Head；LM Head 是与 $M$ 无关的固定项，决定了这种 draft 的成本下限。</figcaption>
+</figure>
+
 每步字节与 $M$ 的关系：
 
 $$
@@ -54,9 +54,14 @@ $k=4$ 下 $M=8$ 的 $T_{\text{round}} = 7.04$ ms，盈亏平衡 $E^{\ast}=2.20$�
 
 ## 附加头：Medusa
 
-第二类变体把 draft 的显式前向彻底去掉：在主干最后一层的隐状态 $h$ 上挂若干小头，一次前向同时产出当前 Token 与未来若干位置的候选。头是两层 MLP（$d\to d\to V$），首个未来位置由原 LM Head 自己负责，通常再挂 2 个头覆盖 +2、+3（结构改绘自 [2]）。
+第二类变体把 draft 的显式前向彻底去掉：在主干最后一层的隐状态 $h$ 上挂若干小头，一次前向同时产出当前 Token 与未来若干位置的候选。头是两层 MLP（$d\to d\to V$），首个未来位置由原 LM Head 自己负责，通常再挂 2 个头覆盖 +2、+3（图 2，结构改绘自 [2]）。
 
 代价在两头。其一，每步固定变贵：128k 词表下每个头约 0.54B 参数、1.08 GB，两头使每步字节从 15.3 涨到 17.5 GB，3.2 → 3.64 ms（+14%）；若词表是 32k，则只涨 3.4%。附加头开销正比于词表大小，且乘以所有步数而不只投机轮。其二，也是结构性的：**所有候选都从同一个 $h$ 出发，预测 +2、+3 位置时看不到 +1 的实际取值，是并行盲猜**。链式 draft 猜第 $i$ 个候选时前 $i-1$ 个已经确定；Medusa 的头先天缺这个条件，接受率因此明显偏低。
+
+<figure class="text-center mt-3 mb-4">
+  <img src="/assets/images/posts/llm-inference/spec-medusa-heads.svg" alt="Medusa：主干最后一层的隐状态 h 同时送入 LM Head 与多个附加头，一次前向产出 +1 真输出与 +2、+3 候选；后两个头在预测时看不到 +1 的实际取值，是并行盲猜。" style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 2：Medusa 的并行头（结构改绘自 [2]）。预测 +2、+3 的头看不到 +1 的实际取值；每头的末层与 LM Head 同量级，开销随词表大小走。</figcaption>
+</figure>
 
 $$
 T_{\text{round}} = 3.64\ \text{ms/步},\qquad E^{\ast} = 1.14
@@ -64,16 +69,16 @@ $$
 
 盈亏平衡是全部方案里最低的（外部 draft 1.67、跳层 2.2–3.1），因为开销摊进了每步固定项而不是按轮收取；但上限同理由此封住：加速比 $=0.88\times E[N]$，而 $E$ 上限是 1 + 头数。训练分两档：Medusa-1 冻结主干只训头，贪心解码下无损；Medusa-2 联合微调，接受率更高但 target 本身变了。采样模式用的是「典型接受」这类近似规则，不是第五篇的严格拒绝采样。实测：Medusa-1 超过 2.2x，Medusa-2 达 2.3–3.6x [2]——高于成本公式对「两个头的裸链」的预期，因为这些配置实际用了更多头加树形验证，形状的作用下一节展开。
 
-<figure class="text-center mt-3 mb-4">
-  <img src="/assets/images/posts/llm-inference/spec-medusa-vs-eagle.svg" alt="左：Medusa 的三个候选都从同一个隐藏状态 h 出发，预测未来位置时看不到彼此的前提，接受率低但无 draft 步。右：EAGLE 与 MTP 的 draft 头在特征层串行推进，第 i 个候选以第 i-1 个为条件，接受率高，每步付 0.31 ms。" style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 2：并行盲猜（左）与串行特征链（右）的差别。两者分别代表「draft 免费、命中低」与「draft 便宜、命中高」两种取舍。</figcaption>
-</figure>
-
 ## 特征层头：EAGLE 与 MTP
 
 第三类变体来自一个实证观察：**相邻位置的隐藏状态高度相似（余弦相似度普遍在 0.9 上下），而相邻 Token 的分布可以截然不同**。特征是连续量，偏差一点不致命；Token 是离散选择，错就是错。在特征空间里猜，先天比在 Token 空间里猜容易。
 
-EAGLE 的 draft 头顺着这个观察构造：一个 decoder 层，输入上一位置的主干特征与 Token embedding 的拼接，输出预测的下一层特征；预测特征过 target 自己的 LM Head 得到候选；候选的 embedding 再喂回头部，串行推进（图 2 右，结构改绘自 [3]）。它与 Medusa 的关键差别是候选串行产生，第 $i$ 个候选建立在第 $i-1$ 个之上，不盲；而串行的代价被头部极小这件事吃掉了。每步字节 $=0.436$（一层）$+1.06$（LM Head）$+0.008$（该层 KV）$\approx1.50$ GB → **0.31 ms，其中 LM Head 占 71%**。$k=4$：$T_{\text{round}}=4.44$ ms，$E^{\ast}=1.39$，临界 $\alpha^{\ast}\approx0.28$，是所有模型类 draft 中门槛最低的。同时它的实际接受率又是最高一档：特征可预测、候选不盲、头部对齐冻结主干训练。**门槛最低而命中最高**，这是 EAGLE 系实测领先（LLaMA2-Chat 70B 上 2.7–3.5x [3]，吞吐翻倍）的结构原因。
+EAGLE 的 draft 头顺着这个观察构造：一个 decoder 层，输入上一位置的主干特征与 Token embedding 的拼接，输出预测的下一层特征；预测特征过 target 自己的 LM Head 得到候选；候选的 embedding 再喂回头部，串行推进（图 3，结构改绘自 [3]）。它与 Medusa 的关键差别是候选串行产生，第 $i$ 个候选建立在第 $i-1$ 个之上，不盲；而串行的代价被头部极小这件事吃掉了。每步字节 $=0.436$（一层）$+1.06$（LM Head）$+0.008$（该层 KV）$\approx1.50$ GB → **0.31 ms，其中 LM Head 占 71%**。$k=4$：$T_{\text{round}}=4.44$ ms，$E^{\ast}=1.39$，临界 $\alpha^{\ast}\approx0.28$，是所有模型类 draft 中门槛最低的。同时它的实际接受率又是最高一档：特征可预测、候选不盲、头部对齐冻结主干训练。**门槛最低而命中最高**，这是 EAGLE 系实测领先（LLaMA2-Chat 70B 上 2.7–3.5x [3]，吞吐翻倍）的结构原因。
+
+<figure class="text-center mt-3 mb-4">
+  <img src="/assets/images/posts/llm-inference/spec-eagle-loop.svg" alt="EAGLE 与 MTP 的 draft 头在特征层串行推进：主干特征 h 与上一候选的 embedding 拼接进一层 draft 头，预测特征过复用的 LM Head 得到候选，候选再回馈进下一步，第 i 个候选以第 i-1 个为条件。" style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 3：EAGLE 与 MTP 的特征层串行链（结构改绘自 [3]）。候选的 embedding 回馈进下一步输入，串行不盲；LM Head 与主干复用。</figcaption>
+</figure>
 
 MTP（Multi-Token Prediction）是同一种头在训练侧的出身。多 Token 预测作为训练目标由 Gloeckle 等系统研究 [6]；DeepSeek-V3 把它做成了出厂配置：主干旁一个 MTP 模块，结构与 EAGLE 头同构（一层、拼接 $(h, e)$、复用 embedding 与 LM Head），区别在于它与主干**联合从头训练**、随 checkpoint 发布 [7]。投机解码由此从推理期的附加组件变成训练期的设计决策；生产环境的采用也证明了这条路（第九节 DSpark 的基线就是单 MTP 模块）。
 
@@ -113,7 +118,7 @@ $\alpha=0.7$ 的链 $E=2.77$，$\beta=0.9$ 的树 $E\approx4.1$，验证耗时�
 
 <figure class="text-center mt-3 mb-4">
   <img src="/assets/images/posts/llm-inference/spec-chain-vs-tree.svg" alt="左：链形候选每个位置只有一次机会，接受概率为 top-1 命中率 α 的连乘。右：树形候选每个位置有 k 次机会，逐层命中率为 top-k 覆盖率 β；验证时每个节点只注意自己的祖先路径（树掩码），同为一次前向。" style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 3：链与树。同为一次 3.2 ms 的验证前向，树把每层的 top-1 命中换成 top-k 覆盖；加粗链是一个节点的祖先路径，即树掩码下它唯一能看见的部分。</figcaption>
+  <figcaption class="text-muted mt-2">图 4：链与树。同为一次 3.2 ms 的验证前向，树把每层的 top-1 命中换成 top-k 覆盖；加粗链是一个节点的祖先路径，即树掩码下它唯一能看见的部分。</figcaption>
 </figure>
 
 ## 训练内置与块级起草：2026 年的两个方向
@@ -122,11 +127,16 @@ $\alpha=0.7$ 的链 $E=2.77$，$\beta=0.9$ 的树 $E\approx4.1$，验证耗时�
 
 **DFlash：把 draft 成本对 $k$ 的斜率压平** [8]。串行链的 draft 成本 $\propto k$，这正是 EAGLE 被迫只做一层的原因；DFlash 用一个小型块扩散模型**一次并行前向产出整块候选**（评测配置 16 个 Token、单步去噪），条件信号取自 target 多层特征、注入 draft 每一层的 KV（EAGLE 只喂第一层，深度会稀释信号），embedding 与 LM Head 复用。成本结构由此改变：16 行对一个小模型就是一次微型 Prefill，行数在带宽瓶颈区照旧近乎免费，示意地按 3 层 draft 算，一次前向约 2.4 GB → 0.5 ms 出 16 个候选，串行方式则要 $16\times0.31\approx5$ ms。报告的实测：Qwen3-8B、温度 0 下 2.3–6.2x，同任务的 EAGLE-3 为 1.9–2.5x；已进入 vLLM 与商用部署（Baseten 报告 2.9x）。以上数字来自其项目页与摘要，成稿口径以论文为准。
 
-**DSpark：把验证变成可调度量** [9]。它的出发点在服务侧：并行起草的块越长尾部衰减越重，而验证整块会把 batch 容量浪费在注定被拒的后缀上，高并发下直接伤吞吐。draft 侧用「并行主干 + 轻量串行模块」建模块内依赖，把并行起草的盲修掉一半；验证侧按估计的前缀存活概率与引擎吞吐画像，逐请求裁剪验证长度。实测相对单 MTP 模块的生产基线（MTP-1），同吞吐下每用户速度提升 60–85%，已部署于 DeepSeek-V4 线上。注意它的目标函数已经从单流延迟扩展到服务吞吐：**验证长度第一次成为可以按系统状态调节的量**，这正是下一篇的主题。
+<figure class="text-center mt-3 mb-4">
+  <img src="/assets/images/posts/llm-inference/spec-dflash-block.svg" alt="DFlash 用小型块扩散模型一次并行前向产出整块候选（16 个），draft 成本对候选数近似平坦；串行起草方式出同样数量候选的成本随数量线性增长。" style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 5：DFlash 的块扩散起草。一次并行前向出整块，draft 成本对候选数近似平坦；条形为同一时间轴的示意，按论文核对。</figcaption>
+</figure>
+
+**DSpark：把验证变成可调度量** [9]。它的出发点在服务侧：并行起草的块越长尾部衰减越重，而验证整块会把 batch 容量浪费在注定被拒的后缀上，高并发下直接伤吞吐。draft 侧用「并行主干 + 轻量串行模块」建模块内依赖，把并行起草的盲修掉一半；验证侧按估计的前缀存活概率与引擎吞吐画像，逐请求裁剪验证长度（图 6）。实测相对单 MTP 模块的生产基线（MTP-1），同吞吐下每用户速度提升 60–85%，已部署于 DeepSeek-V4 线上。注意它的目标函数已经从单流延迟扩展到服务吞吐：**验证长度第一次成为可以按系统状态调节的量**，这正是下一篇的主题。
 
 <figure class="text-center mt-3 mb-4">
-  <img src="/assets/images/posts/llm-inference/spec-block-and-schedule.svg" alt="左：DFlash 用小型块扩散模型一次并行前向产出整块候选，draft 成本对候选数近似平坦（示意：约 0.5 ms 出 16 个候选，串行方式约 5 ms）。右：DSpark 按估计的前缀存活概率裁剪验证长度，把验证从固定成本变成可调度量。" style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 4：2026 年的两个方向。左：块起草把 draft 成本对候选数的依赖压平（示意改绘自 DFlash [8]）；右：验证按置信裁剪，未验证的浅色后缀按存活概率舍弃 [9]。</figcaption>
+  <img src="/assets/images/posts/llm-inference/spec-dspark-schedule.svg" alt="DSpark 按估计的前缀存活概率逐请求裁剪验证长度：置信边界之前的候选正常验证，之后的后缀按存活概率舍弃，不浪费 batch 容量；验证长度成为可调度量。" style="width: 100%; max-width: 1120px; height: auto;">
+  <figcaption class="text-muted mt-2">图 6：DSpark 的置信调度验证 [9]。置信边界之后的候选按存活概率舍弃，验证长度成为可调度量。</figcaption>
 </figure>
 
 至此设计空间多了三个维度：**出身**（外挂训练还是预训练内置，MTP）、**draft 成本对 $k$ 的形状**（线性还是平坦，DFlash）、**验证的可调度性**（固定成本还是按置信与系统状态调节，DSpark）。验证与接受概率的骨架始终未变。
@@ -147,11 +157,25 @@ $\alpha=0.7$ 的链 $E=2.77$，$\beta=0.9$ 的树 $E\approx4.1$，验证耗时�
 
 读这张表要注意三点。其一，口径不同：多数是单流延迟，EAGLE-3 的第二行与 DSpark 是吞吐或线上指标，高并发下投机未必是正收益，下一篇专门算。其二，实测的排序与本文成本表一致：门槛最低、命中最高的特征层头与块扩散落在最前，跳层垫后。其三，所有数字都是各自论文的最优配置（头数、$k$、树形状各不相同），横向比较只到量级为止。
 
+## 各家在用什么
+
+闭源服务不公开推理内部实现，能确认的信息集中在开源与开源权重一侧：
+
+| 厂商 | 公开的方案 | 证据 |
+| --- | --- | --- |
+| DeepSeek | V3 出厂 MTP 模块；V4 线上 DSpark（半自回归 + 验证调度） | 技术报告与论文 [7][9] |
+| 智谱（GLM） | GLM-4.5 / 4.5-Air 内置 MTP 层（额外一层 MoE），SGLang、vLLM 官方支持 | 技术报告 [10] |
+| OpenAI | gpt-oss（开源权重）带 MTP 组件、权重随 checkpoint 发布、明确为投机解码设计；ChatGPT / API 内部未公开 | 官方发布 [11] |
+| Google | 投机采样源于 DeepMind（第五篇 [2]）；Gemma 4 以 MTP 为官方投机解码路径；Gemini 服务端未明示 | 官方博客与文档 |
+| Anthropic | 无官方披露；行业分析普遍认为生产中采用了投机解码 | 无一手来源 |
+
+三条观察。其一，**开源阵营已经收敛到「训练内置 MTP」这一条线**：DeepSeek、智谱、OpenAI 的开源权重、Google 的 Gemma 全部如此。第五篇的外部小模型与本篇的外挂头路线服务于存量模型，新模型的出厂配置里 draft 已是预训练的一部分，且引擎（SGLang、vLLM）原生支持，部署链条打通。其二，闭源 API 的内部做法基本不可考，第三方转述的加速数字无法核实，选型参考应以开源证据为准。其三，DSpark 在 MTP 底座上靠调度再拿 60–85% 的提升，说明训练内置只是起点，服务侧还有独立的一层收益，这正是下一篇的主题。
+
 ## 选型与取舍
 
 <figure class="text-center mt-3 mb-4">
   <img src="/assets/images/posts/llm-inference/spec-round-cost-breakdown.svg" alt="六种候选来源在 k=4 下的一轮耗时构成：跳层 M=16 共 10.0 ms、跳层 M=8 共 7.04 ms、外部 1B 共 5.34 ms、EAGLE 与 MTP 共 4.44 ms、Medusa 两头每步 3.64 ms、n-gram 仅验证 3.2 ms；右侧标注盈亏平衡所需的每轮期望产出。" style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 5：一轮成本的构成与盈亏平衡。draft 步时（橙）与验证（紫）是所有方案共有的两项，Medusa 的附加头（蓝）按每步收取；门槛最低的三个方案恰好也是实测最快的三个。</figcaption>
+  <figcaption class="text-muted mt-2">图 7：一轮成本的构成与盈亏平衡。draft 步时（橙）与验证（紫）是所有方案共有的两项，Medusa 的附加头（蓝）按每步收取；门槛最低的三个方案恰好也是实测最快的三个。</figcaption>
 </figure>
 
 | 场景 | 默认选择 | 依据 |
@@ -182,3 +206,5 @@ $\alpha=0.7$ 的链 $E=2.77$，$\beta=0.9$ 的树 $E\approx4.1$，验证耗时�
 7. [DeepSeek-AI — DeepSeek-V3 Technical Report](https://arxiv.org/abs/2412.19437)
 8. [Chen et al. — DFlash: Block Diffusion for Flash Speculative Decoding](https://arxiv.org/abs/2602.06036)
 9. [Cheng et al. — DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation](https://arxiv.org/abs/2607.05147)
+10. [Zhipu AI — GLM-4.5: Agentic, Reasoning, and Coding (ARC) Foundation Models](https://arxiv.org/abs/2508.06471)
+11. [OpenAI — Introducing gpt-oss](https://openai.com/index/introducing-gpt-oss/)

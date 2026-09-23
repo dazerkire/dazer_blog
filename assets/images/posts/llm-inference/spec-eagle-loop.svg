@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="470" viewBox="0 0 1120 470" role="img" aria-labelledby="title desc">
+<title id="title">EAGLE 与 MTP 的特征层串行链</title>
+<desc id="desc">EAGLE 与 MTP 的 draft 头在特征层串行推进：主干特征 h 与上一候选的 embedding 拼接进一层 draft 头，预测特征过复用的 LM Head 得到候选，候选再回馈进下一步，第 i 个候选以第 i-1 个为条件。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  </style>
+<rect class="bg" width="1120" height="470" rx="20"/>
+<text class="label" x="60" y="70">EAGLE / MTP：特征层串行起草</text><rect x="100" y="120" width="140" height="52" rx="8" fill="#2563eb"/>
+<text class="in" x="170" y="152" text-anchor="middle">主干 32 层</text>
+<path fill="none" stroke="#344054" stroke-width="2.5" d="M240 146 L299 146"/>
+<path fill="#344054" d="M310 146 L297 152 L297 140 Z"/>
+<circle cx="330" cy="146" r="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/><text class="on" x="330" y="153" text-anchor="middle">h</text><path fill="none" stroke="#344054" stroke-width="2.5" d="M350 146 L419 146"/>
+<path fill="#344054" d="M430 146 L417 152 L417 140 Z"/>
+<rect x="430" y="120" width="170" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="515" y="152" text-anchor="middle">draft 头（一层）</text>
+<text class="blk" x="515" y="196" text-anchor="middle">输入 (h, e) 拼接</text><path fill="none" stroke="#344054" stroke-width="2.5" d="M600 146 L669 146"/>
+<path fill="#344054" d="M680 146 L667 152 L667 140 Z"/>
+<rect x="680" y="120" width="120" height="52" rx="8" fill="#7c3aed"/>
+<text class="in" x="740" y="152" text-anchor="middle">LM Head</text>
+<rect x="430" y="300" width="60" height="60" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="460" y="336" text-anchor="middle">c1</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M492 330 L545 330"/>
+<path fill="#f97316" d="M556 330 L543 336 L543 324 Z"/>
+<rect x="560" y="300" width="60" height="60" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="590" y="336" text-anchor="middle">c2</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M622 330 L675 330"/>
+<path fill="#f97316" d="M686 330 L673 336 L673 324 Z"/>
+<rect x="690" y="300" width="60" height="60" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="720" y="336" text-anchor="middle">c3</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M752 330 L805 330"/>
+<path fill="#f97316" d="M816 330 L803 336 L803 324 Z"/>
+<rect x="820" y="300" width="60" height="60" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="850" y="336" text-anchor="middle">c4</text>
+<path fill="none" stroke="#7c3aed" stroke-width="2.5" d="M740 172 V 240 H 460 V 292"/><path fill="#7c3aed" d="M460 292 l-6 -11 l12 0 z"/><text class="blk" x="764" y="222">产出候选</text><path fill="none" stroke="#f97316" stroke-width="2.5" d="M460 360 V 420 H 580 V 366"/><path fill="#f97316" d="M580 366 l-6 -11 l12 0 z"/><text class="blk" x="610" y="434">e 回馈：以 c1 为条件出 c2，逐步串行</text><text class="note" x="100" y="452">每步 1.50 GB → 0.31 ms（LM Head 占 71%）；k=4 共 4.44 ms。MTP：同构模块与主干联合从头训练</text></svg>

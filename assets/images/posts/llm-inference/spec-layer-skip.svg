@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="430" viewBox="0 0 1120 430" role="img" aria-labelledby="title desc">
+<title id="title">跳层起草的机制</title>
+<desc id="desc">跳层起草：draft 路径只读主干前 M 层加 LM Head，早期退出产出候选链；验证路径走完整 32 层。LM Head 是与 M 无关的固定项，M=8 时占每步字节的 23%。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  </style>
+<rect class="bg" width="1120" height="430" rx="20"/>
+<text class="label" x="60" y="70">跳层起草：主干前 M 层 + LM Head 早期退出</text><rect x="130" y="110" width="120" height="240" rx="10" fill="#dbeafe"/><line x1="136" y1="130" x2="244" y2="130" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="150" x2="244" y2="150" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="170" x2="244" y2="170" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="190" x2="244" y2="190" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="210" x2="244" y2="210" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="230" x2="244" y2="230" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="250" x2="244" y2="250" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="270" x2="244" y2="270" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="290" x2="244" y2="290" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="310" x2="244" y2="310" stroke="#dce3ea" stroke-width="2"/><line x1="136" y1="330" x2="244" y2="330" stroke="#dce3ea" stroke-width="2"/><rect x="130" y="290" width="120" height="60" rx="10" fill="#ffedd5"/><text class="blk" x="118" y="236" text-anchor="end">主干 32 层</text><text class="muted" x="118" y="324" text-anchor="end">前 M 层</text><path fill="none" stroke="#f97316" stroke-width="2.5" d="M250 320 L349 320"/>
+<path fill="#f97316" d="M360 320 L347 326 L347 314 Z"/>
+<rect x="360" y="294" width="120" height="52" rx="8" fill="#f97316"/>
+<text class="in" x="420" y="326" text-anchor="middle">LM Head</text>
+<path fill="none" stroke="#f97316" stroke-width="2.5" d="M480 320 L549 320"/>
+<path fill="#f97316" d="M560 320 L547 326 L547 314 Z"/>
+<rect x="560" y="296" width="46" height="46" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="583" y="325" text-anchor="middle">t1</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M608 319 L605 319"/>
+<path fill="#f97316" d="M616 319 L603 325 L603 313 Z"/>
+<rect x="618" y="296" width="46" height="46" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="641" y="325" text-anchor="middle">t2</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M666 319 L663 319"/>
+<path fill="#f97316" d="M674 319 L661 325 L661 313 Z"/>
+<rect x="676" y="296" width="46" height="46" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="699" y="325" text-anchor="middle">t3</text>
+<path fill="none" stroke="#f97316" stroke-width="2" d="M724 319 L721 319"/>
+<path fill="#f97316" d="M732 319 L719 325 L719 313 Z"/>
+<rect x="734" y="296" width="46" height="46" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+<text class="blk" x="757" y="325" text-anchor="middle">t4</text>
+<path fill="none" stroke="#7c3aed" stroke-width="2.5" d="M250 140 L349 140"/>
+<path fill="#7c3aed" d="M360 140 L347 146 L347 134 Z"/>
+<rect x="360" y="114" width="200" height="52" rx="8" fill="#ddd6fe"/>
+<text class="on" x="460" y="146" text-anchor="middle">完整 32 层 → 验证</text>
+<text class="blk" x="560" y="384">draft 路径：只读前 M 层与 LM Head，串行 k 步</text><text class="on" x="820" y="164">每步字节</text><text class="muted" x="820" y="196">= M × (0.436 + 0.008) GB</text><text class="muted" x="820" y="224">+ 1.06 GB（LM Head）</text><text class="muted" x="820" y="262">M=8：4.61 GB → 0.96 ms</text><text class="muted" x="820" y="290">M=16：8.17 GB → 1.70 ms</text><text class="note" x="820" y="330">LM Head 固定 1.06 GB，</text><text class="note" x="820" y="354">M=8 时占每步字节 23%</text></svg>

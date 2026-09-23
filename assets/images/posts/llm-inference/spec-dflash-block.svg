@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="400" viewBox="0 0 1120 400" role="img" aria-labelledby="title desc">
+<title id="title">DFlash 的块扩散起草</title>
+<desc id="desc">DFlash 用小型块扩散模型一次并行前向产出整块候选（16 个），draft 成本对候选数近似平坦；串行起草方式出同样数量候选的成本随数量线性增长。</desc>
+<style>
+    .bg { fill: #fbfcfe; }
+    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
+    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  </style>
+<rect class="bg" width="1120" height="400" rx="20"/>
+<text class="label" x="60" y="70">DFlash：一次并行前向出整块</text><rect x="100" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="133" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="166" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="199" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="232" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="265" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="298" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="331" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="364" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="397" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="430" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="463" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="496" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="529" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="562" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="595" y="110" width="30" height="30" rx="4" fill="#f97316"/><text class="blk" x="100" y="170">块扩散：一次并行前向，16 个候选（示意：3 层 draft、单步去噪）</text><rect x="100" y="220" width="34" height="30" rx="4" fill="#f97316"/><text class="blk" x="146" y="242">约 0.5 ms（并行一次）</text><rect x="100" y="280" width="340" height="30" rx="4" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="452" y="302">约 5 ms（串行 16 步）</text><text class="note" x="100" y="356">两根条为同一时间轴（示意）；候选层数按论文配置待核对</text><text class="on" x="780" y="130">draft 成本对候选数近似平坦</text><text class="muted" x="780" y="164">多层特征注入 draft 每层 KV</text><text class="muted" x="780" y="196">embedding 与 LM Head 复用</text><text class="muted" x="780" y="228">实测 2.3–6.2x（Qwen3-8B，温度 0）</text></svg>
