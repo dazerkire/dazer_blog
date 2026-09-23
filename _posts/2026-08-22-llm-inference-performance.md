@@ -36,7 +36,7 @@ tags: [LLM, 在线推理, Prefill, Decode, TTFT, TPOT]
 ```text
 "Hi, what's your name?"
   ↓ tokenizer
-[x₁, x₂, x₃, …, xₙ]
+[x1, x2, x3, ..., xn]
 ```
 
 自回归语言模型要做的，是在已有上下文的条件下预测下一个 Token。模型首先得到的是下一个 Token 的概率分布：

@@ -117,9 +117,9 @@ $$
 新 Token 仍要计算自己的 $Q,K,V$。但历史 Token 的 $K,V$ 已在每一层中缓存，无需重新从头计算：
 
 ```text
-历史 Token：K₁,V₁ ... Kₜ,Vₜ  → KV Cache
-新 Token：计算 Qₜ₊₁,Kₜ₊₁,Vₜ₊₁
-          Qₜ₊₁ 与缓存的 K 匹配，再按权重读取缓存的 V
+历史 Token：K1,V1 ... Kt,Vt  → KV Cache
+新 Token：计算 Q(t+1),K(t+1),V(t+1)
+          Q(t+1) 与缓存的 K 匹配，再按权重读取缓存的 V
 ```
 
 Query 只用于当前这一步 attention，未来 Token 不会再使用它，所以不需要缓存；历史 K、V 则会被每一个后续 Token 反复访问。
