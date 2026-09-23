@@ -11,19 +11,19 @@
    - attention、MLP、GEMM / GEMV、KV Cache、Roofline 与公开基准的数量级比较。
 
 3. **LLM 推理系统（三）：KV Cache、并发与请求调度——上限、浪费与取舍**
-   - 并发的账本（权重摊销、KV 不摊销、显存上限）、静态 batch、continuous batching 与 selective batching、
+   - 并发的收益来源（权重摊销、KV 不摊销、显存上限）、静态 batch、continuous batching 与 selective batching、
      chunked prefill、PagedAttention（分页、共享与 prefix cache、准入与抢占）、SLO 视角的吞吐–延迟总账。
    - 原理在本篇讲透，第八篇只做框架落地对比。
 
 4. **LLM 推理系统（四）：量化究竟改变了什么——字节、算力与误差**
-   - 两本账：字节列（带宽）与算力列（屋顶）；误差是第三本独立账。
+   - 字节列（带宽）与算力列（计算峰值）两条线索；误差是独立的第三个问题。
    - 收益：加速比 = 被压缩项的字节占比（同一次 W4：B=1 约 3.8x，B=64 约 1.5x）；拐点左移（56→14）；
      KV FP8 使并发上限与吞吐天花板各翻倍，W4 腾显存仅 +9%；prefill 的 max 不动，FP8 尾数减半换来
-     屋顶翻倍（989→1979）；端到端两场景互有胜负（对话 W4 胜、RAG FP8 胜）。
-   - 误差：仿射量化与 a/2 上界、「中间值税」、outlier 劫持、group size 与 0.125 bit 元数据、
-     g=1 悖论（量化 = 赌一组数共享动态范围）、动态 scale 分水岭（W4A16 vs W8A8/FP8）、
+     计算峰值翻倍（989→1979）；端到端两场景互有胜负（对话 W4 胜、RAG FP8 胜）。
+   - 误差：仿射量化与 a/2 上界、中间值承担最大误差、outlier 主导 scale、group size 与 0.125 bit 元数据、
+     g=1 悖论（量化的压缩全部来自共享动态范围）、动态 scale 分水岭（W4A16 vs W8A8/FP8）、
      outlier channels 三条出路（LLM.int8 / SmoothQuant / weight-only）、KV 粒度（K per-channel、V per-token）。
-   - 实测与选型：NVIDIA H200 基准的三层折扣（T_other 不缩水、占比定律、W4A16 kernel 税致 B≥8 倒亏）；
+   - 实测与选型：NVIDIA H200 基准的三层折扣（T_other 不缩水、占比定律、W4A16 kernel 开销致 B≥8 低于 BF16）；
      PTQ/QAT 分工；INT8 让位 FP8 的三个原因；INT4 的端侧位置与 Blackwell 原生 FP4。
 
 ## 后续文章

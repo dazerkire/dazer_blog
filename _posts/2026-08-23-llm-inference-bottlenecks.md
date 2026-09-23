@@ -202,20 +202,20 @@ $$
 I=\frac{F}{B}
 $$
 
-称为算术强度：每搬运 1 字节数据，完成多少 FLOPs。算术强度低时，性能受带宽限制；算术强度提高后，才可能碰到计算峰值这条“屋顶”。这就是 Roofline 这个名字的由来：带宽限制区是一条斜线，计算峰值区是一条水平线。斜线与水平线的交点在
+称为算术强度：每搬运 1 字节数据，完成多少 FLOPs。算术强度低时，性能受带宽限制；算术强度提高后，才可能触及计算峰值。Roofline 图上，带宽限制区是一条斜线，计算峰值区是一条水平线。斜线与水平线的交点在
 
 $$
 I^{*}=\frac{P_{\mathrm{peak}}}{BW_{\mathrm{peak}}}
 $$
 
-称为屋脊点，由硬件的两个峰值之比决定。它回答的问题是：每搬运 1 字节，至少要配上多少 FLOPs，才可能触及计算峰值。当 $I<I^{\ast}$ 时，无论实现多好，算力利用率的上限都是 $I/I^{\ast}$；只有越过屋脊点，性能才由计算峰值封顶。
+称为转折点（ridge point），由硬件的两个峰值之比决定。它回答的问题是：每搬运 1 字节，至少要配上多少 FLOPs，才可能触及计算峰值。当 $I<I^{\ast}$ 时，无论实现多好，算力利用率的上限都是 $I/I^{\ast}$；只有越过转折点，性能才由计算峰值封顶。
 
 <figure class="text-center mt-3 mb-4">
   <img
     src="/assets/images/posts/llm-inference/roofline-model.svg"
     alt="Roofline 模型：性能在低算术强度时受显存带宽限制并沿斜线增长；达到计算峰值后形成水平平台。"
     style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 3：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定，两者的交点即屋脊点。</figcaption>
+  <figcaption class="text-muted mt-2">图 3：Roofline 性能模型。斜线的斜率由显存带宽决定，水平平台由计算峰值决定，两者的交点即转折点。</figcaption>
 </figure>
 
 为与后文的公开基准对齐，以下统一采用 H200 SXM。它与 H100 同属 Hopper 架构，dense BF16 计算峰值相同，这里取 $989$ TFLOPS 与 $4.8$ TB/s HBM3e 带宽，不采用厂商表中“开启结构化稀疏”时的更高峰值。[5] 上述 2048-token Prefill 的纯计算下界约为：
@@ -232,7 +232,7 @@ $$
 \approx 3.2\ \text{ms/token}
 $$
 
-把这两个下界放回 Roofline 上对照：H200 的屋脊点为 $989\ \text{TFLOPS}/4.8\ \text{TB/s}\approx 206$ FLOPs/字节。2048-token Prefill 的算术强度约为 $30.8\ \text{TFLOPs}/15.0\ \text{GB}\approx 2000$，在屋脊点右侧，落在计算平台上，因此下界由算力给出（约 31 ms）；batch=1 Decode 的算术强度约为 $16.1\ \text{GFLOPs}/15.3\ \text{GB}\approx 1$，深在斜线区，算力利用率上限约 $1/206\approx 0.5\%$，下界由带宽给出（约 3.2 ms/token）。
+把这两个下界放回 Roofline 上对照：H200 的转折点为 $989\ \text{TFLOPS}/4.8\ \text{TB/s}\approx 206$ FLOPs/字节。2048-token Prefill 的算术强度约为 $30.8\ \text{TFLOPs}/15.0\ \text{GB}\approx 2000$，在转折点右侧，落在计算平台上，因此下界由算力给出（约 31 ms）；batch=1 Decode 的算术强度约为 $16.1\ \text{GFLOPs}/15.3\ \text{GB}\approx 1$，深在斜线区，算力利用率上限约 $1/206\approx 0.5\%$，下界由带宽给出（约 3.2 ms/token）。
 
 这两个数字都不是实际服务延迟的承诺。峰值吞吐和峰值带宽很难同时、持续地达到；attention、归一化、采样、kernel launch、内存管理以及多 GPU 通信也未包含在内。更接近现实的表达是：
 
@@ -251,7 +251,7 @@ $$
 
 ## 小结
 
-Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。放在 Roofline 上，就是 Prefill 的算术强度远在屋脊点之上，速度由计算峰值决定；Decode 深在屋脊点之下，速度由显存带宽决定。
+Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。放在 Roofline 上，就是 Prefill 的算术强度远在转折点之上，速度由计算峰值决定；Decode 深在转折点之下，速度由显存带宽决定。
 
 这给出了阅读后续优化方法的一条主线：有的技术减少 FLOPs，有的减少字节搬运，有的提高权重复用，有的压缩 KV Cache，有的则试图打破逐 Token 的串行过程。只有先区分瓶颈来自计算、带宽还是串行依赖，才知道一个优化为什么会有效，以及它会牺牲什么。
 
