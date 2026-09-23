@@ -15,19 +15,18 @@
      chunked prefill、PagedAttention（分页、共享与 prefix cache、准入与抢占）、SLO 视角的吞吐–延迟总账。
    - 原理在本篇讲透，第八篇只做框架落地对比。
 
+4. **LLM 推理系统（四）：量化究竟改变了什么——字节、算力与误差**
+   - 两本账：字节列（带宽）与算力列（屋顶）；误差是第三本独立账。
+   - 收益：加速比 = 被压缩项的字节占比（同一次 W4：B=1 约 3.8x，B=64 约 1.5x）；拐点左移（56→14）；
+     KV FP8 使并发上限与吞吐天花板各翻倍，W4 腾显存仅 +9%；prefill 的 max 不动，FP8 尾数减半换来
+     屋顶翻倍（989→1979）；端到端两场景互有胜负（对话 W4 胜、RAG FP8 胜）。
+   - 误差：仿射量化与 a/2 上界、「中间值税」、outlier 劫持、group size 与 0.125 bit 元数据、
+     g=1 悖论（量化 = 赌一组数共享动态范围）、动态 scale 分水岭（W4A16 vs W8A8/FP8）、
+     outlier channels 三条出路（LLM.int8 / SmoothQuant / weight-only）、KV 粒度（K per-channel、V per-token）。
+   - 实测与选型：NVIDIA H200 基准的三层折扣（T_other 不缩水、占比定律、W4A16 kernel 税致 B≥8 倒亏）；
+     PTQ/QAT 分工；INT8 让位 FP8 的三个原因；INT4 的端侧位置与 Blackwell 原生 FP4。
+
 ## 后续文章
-
-### 四、量化究竟改变了什么
-
-核心问题：量化减少了哪些字节搬运，又在哪些地方引入误差和额外计算？
-
-- 回到 memory-bound Decode，解释压缩权重的收益；
-- 权重量化、激活量化、KV Cache 量化分别作用于什么；
-- 对称 / 非对称量化，scale、zero point、group size；
-- PTQ 与 QAT；
-- INT8、INT4、FP8 的取舍；
-- 用同一个 8B 模型估算权重与 KV Cache 的显存变化；
-- 理论压缩率与端到端加速比的差异。
 
 ### 五、投机解码如何突破逐 Token 串行
 
