@@ -254,5 +254,4 @@ Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已�
 4. [Williams et al. — Roofline: An Insightful Visual Performance Model for Multicore Architectures](https://doi.org/10.1145/1498765.1498785)
 5. [NVIDIA H200 Tensor Core GPU](https://www.nvidia.com/en-us/data-center/h200/)
 6. [NVIDIA Model Optimizer — Inference benchmark examples](https://github.com/NVIDIA/Model-Optimizer/blob/main/examples/benchmark.md)
-
 7. [NVIDIA TensorRT-LLM v0.15.0 — Performance overview（吞吐统计口径）](https://github.com/NVIDIA/TensorRT-LLM/blob/v0.15.0/docs/source/performance/perf-overview.md)
