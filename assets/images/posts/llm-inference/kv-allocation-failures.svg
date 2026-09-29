@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="400" viewBox="0 0 1120 400" role="img" aria-labelledby="title desc">
   <title id="title">KV Cache 两种朴素管理方案的失败</title>
-  <desc id="desc">上图：按最大长度连续预留，每路预留 8192 token，实际用量各不相同，斜纹部分永不写入却始终占着显存；下图：按需分配导致外部碎片，空闲总量足够但最大的连续空洞装不下新请求。</desc>
+  <desc id="desc">KV Cache 两种朴素管理方案的失败：按最大长度连续预留，斜纹部分永不写入却始终占着显存；按需分配产生外部碎片，空闲总量足够但最大的连续空洞装不下新请求。</desc>
   <style>
     .bg { fill: #fbfcfe; }
     .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }

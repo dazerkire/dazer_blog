@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="430" viewBox="0 0 1120 430" role="img" aria-labelledby="title desc">
 <title id="title">Medusa 的并行头</title>
-<desc id="desc">Medusa：主干最后一层的隐状态 h 同时送入 LM Head 与多个附加头，一次前向产出 +1 真输出与 +2、+3 候选；后两个头在预测时看不到 +1 的实际取值，是并行盲猜。</desc>
+<desc id="desc">Medusa 将同一个主干隐状态送入原 LM Head 和多个未来位置预测头；各头并行产生候选，后续结合树形验证与指定接受规则决定输出。</desc>
 <style>
     .bg { fill: #fbfcfe; }
     .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
@@ -19,7 +19,7 @@
 <circle cx="330" cy="208" r="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/><text class="on" x="330" y="215" text-anchor="middle">h</text><path fill="none" stroke="#2563eb" stroke-width="2.5" d="M350 198 L460.568 131.659"/>
 <path fill="#2563eb" d="M470 126 L461.94 137.833 L455.766 127.543 Z"/>
 <rect x="470" y="100" width="200" height="52" rx="8" fill="#2563eb"/>
-<text class="in" x="570" y="132" text-anchor="middle">LM Head：+1 真输出</text>
+<text class="in" x="570" y="132" text-anchor="middle">LM Head：预测 +1</text>
 <path fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 6" d="M350 208 L459 208"/>
 <path fill="#f97316" d="M470 208 L457 214 L457 202 Z"/>
 <rect x="470" y="182" width="200" height="52" rx="8" fill="#f97316"/>
@@ -28,4 +28,4 @@
 <path fill="#f97316" d="M470 290 L455.766 288.457 L461.94 278.167 Z"/>
 <rect x="470" y="264" width="200" height="52" rx="8" fill="#f97316"/>
 <text class="in" x="570" y="296" text-anchor="middle">头 2：+3 候选</text>
-<path fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 7" d="M700 176 V 316"/><text class="muted" x="716" y="230">预测 +2、+3 时，</text><text class="muted" x="716" y="258">前提（+1 的取值）</text><text class="muted" x="716" y="286">尚未产生</text><text class="note" x="100" y="384">draft 步时为 0；每头末层约 d×V：128k 词表两头 +2.17 GB，每步 3.2 → 3.64 ms（+14%）；32k 词表仅 +3.4%</text><text class="note" x="100" y="412">上限 E = 1 + 头数</text></svg>
+<path fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 7" d="M700 176 V 316"/><text class="muted" x="716" y="230">预测 +2、+3 时，</text><text class="muted" x="716" y="258">前面候选的取值</text><text class="muted" x="716" y="286">尚未产生</text><text class="note" x="100" y="384">没有独立串行 draft；两头仍增加约 2.16 GB 参数。3.64 ms 是忽略其他成本的轮次算例。</text><text class="note" x="100" y="412">输出须经过验证与接受规则</text></svg>

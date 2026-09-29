@@ -51,7 +51,7 @@ $$
 
 *图 1：Decoder-only LLM 的一次自回归生成流程。*{: .text-center .d-block .mt-2 .mb-4 }
 
-图中的 **Causal Self-Attention** 表示当前位置只能关注已有的 Token，不能读取未来 Token；这正是生成必须逐步进行的原因。模型经过多层 Decoder Block 后，由 LM Head 得到词表上每个候选 Token 的分数（logits），再由采样策略选出下一个 Token。生成第二个及之后的 Token 时，历史 Token 的 Key 和 Value 会以 KV Cache 的形式被复用；它的具体内存与性能问题留到后续文章展开。
+图中的 **Causal Self-Attention** 表示当前位置只能关注已有的 Token，不能读取未来 Token。普通自回归生成还需要先选定前一个输出，才能确定后一个位置的输入，因此通常逐步执行。模型经过多层 Decoder Block 后，由 LM Head 得到词表上每个候选 Token 的分数（logits），再由采样策略选出下一个 Token。生成第二个及之后的 Token 时，历史 Token 的 Key 和 Value 会以 KV Cache 的形式被复用；它的具体内存与性能问题留到后续文章展开。
 
 假设第一个输出 Token 对应 `Hello`，它会被追加到上下文；模型随后才能预测下一个 Token。这个过程不断重复，最终形成完整回复。
 
@@ -170,19 +170,15 @@ Prefill 会处理已经确定的完整 Prompt，得到预测第一个输出 Toke
 
 同一个服务可以很快返回第一个字，却在后续生成中断断续续；也可以首字稍慢，但在高并发下完成更多工作。因此，“快”必须被拆成对应不同阶段的指标。
 
-![一次推理请求的时间轴：请求发出后经过应用准备与排队、Prefill，首 Token 到达即 TTFT；随后逐 Token 生成，相邻 Token 的间隔为 ITL；从请求发出到完整响应接收完成为端到端延迟。](/assets/images/posts/llm-inference/metrics-timeline.svg)
+![模型 API 请求的时间轴：TTFT 从 API 请求发出到首 Token 到达；ITL 为相邻 Token 间隔，TPOT 为请求内 ITL 的平均，调用前的应用准备单独统计。](/assets/images/posts/llm-inference/metrics-timeline.svg)
 
 *图 3：TTFT、ITL 与端到端延迟在一次请求时间轴上的位置。*{: .text-center .d-block .mt-2 .mb-4 }
 
 **TTFT：第一个 Token 何时出现。**
 
-**TTFT（Time To First Token）** 是从请求开始到客户端收到第一个输出 Token 的时间。它大致包含：
+**TTFT（Time To First Token）** 是从一次模型 API 请求发出，到客户端收到第一个输出 Token 的时间。本文统一使用客户端观测口径，包含网络、服务端 Tokenize、排队调度、Prefill 和首 Token 的采样与传输。
 
-```text
-应用侧准备 + Tokenize + 排队与调度 + Prefill + 首 Token 采样与传输
-```
-
-对交互式对话和 RAG，TTFT 往往是最直接的“响应是否及时”指标。长 Prompt、长队列、检索慢或 Prefill 慢，都会拉高 TTFT。即使模型后续生成很快，只要用户迟迟看不到第一个字，体验仍然会很差。
+RAG 检索、重排序和 Prompt 构造若发生在调用模型之前，不计入这次模型 API 的 TTFT；它们仍属于应用从用户提交到显示首字的总等待时间。比较基准时必须先对齐测量起止点，不能把这两种口径混用。
 
 **ITL 与 TPOT：后续 Token 是否连续出现。**
 
@@ -194,17 +190,17 @@ Hello → ! → I'm → an → AI → assistant
 
 **ITL（Inter-Token Latency）** 描述相邻两个输出 Token 到达之间的时间间隔。实践中也常用 **TPOT（Time Per Output Token）** 描述首 Token 之后，平均每生成一个输出 Token 所需的时间。
 
-不同系统或论文对 TPOT 的统计口径可能略有不同。本文采用以下约定：ITL 关注每一步的间隔，TPOT 关注这些间隔的平均值。对于流式聊天，TPOT 越小，文字看起来越连贯；它主要反映 Decode 循环的速度，也可能受到批处理、调度和网络传输影响。
+不同系统或论文对 TPOT 的统计口径可能略有不同。本文采用以下约定：ITL 关注每一步的间隔，TPOT 关注这些间隔的平均值。对于流式聊天，TPOT 越小，平均生成速度越快；是否连贯还要看 ITL 的分布。投机解码可能成批返回多个 Token，使平均 TPOT 下降而较长的 ITL 仍然存在。
 
 **端到端延迟：完整答案何时完成。**
 
 端到端延迟从请求发出开始，到完整响应接收完成为止。若输出共有 `M` 个 Token，可以用下式建立直觉：
 
 $$
-T_{\text{end-to-end}} \approx \operatorname{TTFT} + (M - 1) \cdot \operatorname{TPOT} + T_{\text{tail}}
+T_{\text{end-to-end}} = \operatorname{TTFT} + (M - 1) \cdot \operatorname{TPOT} + T_{\text{tail}}
 $$
 
-这不是严格公式，因为每一步 Decode 的耗时并不完全一致；但它说明了不同工作负载的差异：长输入、短输出时，TTFT 往往更关键；短输入、长输出时，TPOT 的累积影响更大；两者都长时，则需要同时关注两条路径。
+当 $M>1$、TPOT 定义为这次请求的 $M-1$ 个 ITL 的算术平均值时，上式是严格恒等式，不要求每一步耗时相同。$T_{\text{tail}}$ 是末 Token 到完整响应结束的时间；$M=1$ 时没有后续间隔，TPOT 不适用。这个分解说明了不同工作负载的差异：长输入、短输出时，TTFT 往往更关键；短输入、长输出时，TPOT 的累积影响更大；两者都长时，则需要同时关注两条路径。
 
 **吞吐、并发与排队：从单个请求到整个服务。**
 
@@ -217,12 +213,12 @@ $$
 
 吞吐高不一定意味着单个用户更快。服务端为了提高 GPU 利用率，可能把更多请求组成 batch；这常能提升总吞吐，却也可能让单个请求等待更久、TTFT 变差。
 
-在线指标还应关注 p50、p95、p99 等分位数：平均值容易掩盖高并发下的排队和长尾，而尾部延迟往往更接近用户真正抱怨的问题。
+分位数也要注明样本单位：汇总全部 Token 间隔得到的 ITL p99，与先计算每个请求的 TPOT 再取请求间 p99，是不同指标。在线指标还应关注 p50、p95、p99 等分位数：平均值容易掩盖高并发下的排队和长尾，而尾部延迟往往更接近用户真正抱怨的问题。
 
 | 指标 | 回答的问题 | 主要对应阶段 |
 | --- | --- | --- |
 | TTFT | 多久看到第一个字？ | 排队、调度、Prefill |
-| ITL / TPOT | 后续文字是否连续？ | Decode、采样、流式传输 |
+| ITL / TPOT | 相邻 Token 的间隔 / 请求内的平均间隔是多少？ | Decode、采样、流式传输 |
 | 端到端延迟 | 完整答案多久完成？ | 全链路 |
 | Token 吞吐 | 系统每秒完成多少模型工作？ | 批处理、调度、硬件利用 |
 | p95 / p99 | 高负载时体验是否稳定？ | 队列与资源竞争 |

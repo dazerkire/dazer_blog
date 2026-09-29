@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690" role="img" aria-labelledby="title desc">
   <title id="title">静态 batch 与 continuous batching 的时间线对比</title>
-  <desc id="desc">上图：静态 batch 中四个请求绑定到 batch 结束，短请求的槽位空占，新请求排队等待；下图：continuous batching 按步重组 batch，完成的请求立即释放槽位，新请求下一步加入。</desc>
+  <desc id="desc">静态 batch 与 continuous batching 的时间线对比：静态 batch 中短请求完成后槽位空占直到最长请求结束，新请求排队等待；continuous batching 中完成的请求立即释放槽位，新请求下一步加入。</desc>
   <style>
     .bg { fill: #fbfcfe; }
     .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }

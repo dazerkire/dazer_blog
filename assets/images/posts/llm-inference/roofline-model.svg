@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
   <title id="title">Roofline 性能模型</title>
-  <desc id="desc">横轴为算术强度，纵轴为性能；性能先受内存带宽限制线性上升，后受计算峰值限制形成平台。</desc>
+  <desc id="desc">Roofline 模型：性能在低算术强度时受显存带宽限制并沿斜线增长；达到计算峰值后形成水平平台。</desc>
   <style>
     .bg { fill: #fbfcfe; }
     .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
@@ -26,8 +26,8 @@
   <path class="axis" d="M135 65 l-8 14 M135 65 l8 14"/>
   <path class="roof" d="M160 495 L630 125 L985 125"/>
   <line class="guide" x1="630" y1="125" x2="630" y2="515"/>
-  <text class="em" x="708" y="108">计算峰值 Pₚₑₐₖ</text>
-  <text class="em" x="258" y="310" transform="rotate(-38 258 310)">显存带宽 BWₚₑₐₖ</text>
+  <text class="em" x="708" y="108">计算峰值 P_peak</text>
+  <text class="em" x="258" y="310" transform="rotate(-38 258 310)">显存带宽 BW_peak</text>
   <text class="small" x="275" y="406">memory-bound</text>
   <text class="small" x="750" y="175">compute-bound</text>
   <text class="muted" x="618" y="548">转折点</text>

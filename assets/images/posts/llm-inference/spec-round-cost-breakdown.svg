@@ -1,20 +1,431 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
-<title id="title">各方案一轮成本的构成与盈亏平衡</title>
-<desc id="desc">六种候选来源在 k=4 下的一轮耗时构成：跳层 M=16 共 10.0 ms、跳层 M=8 共 7.04 ms、外部 1B 共 5.34 ms、EAGLE 与 MTP 共 4.44 ms、Medusa 两头每步 3.64 ms、n-gram 仅验证 3.2 ms；右侧标注盈亏平衡所需的每轮期望产出。</desc>
-<style>
-    .bg { fill: #fbfcfe; }
-    .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
-    .axis { stroke: #344054; stroke-width: 2.5; }
-    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
-    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .tick { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .ser { font: 700 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .edg { stroke: #94a3b8; stroke-width: 2; fill: none; }
-  </style>
-<rect class="bg" width="1120" height="640" rx="20"/>
-<rect x="170" y="58" width="18" height="18" rx="4" fill="#f97316"/><text class="muted" x="196" y="74">draft 步时（k=4）</text><rect x="370" y="58" width="18" height="18" rx="4" fill="#7c3aed"/><text class="muted" x="396" y="74">验证前向</text><rect x="520" y="58" width="18" height="18" rx="4" fill="#2563eb"/><text class="muted" x="546" y="74">每步附加头</text><text class="blk" x="178" y="158" text-anchor="end">跳层 M=16</text><rect x="190" y="130" width="462.4" height="44" rx="6" fill="#f97316"/><text class="in" x="642.4" y="158" text-anchor="end">6.8</text><rect x="652.4" y="130" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="860" y="158" text-anchor="end">3.2</text><text class="on" x="882" y="158">10.0 ms</text><text class="muted" x="965" y="158">E* = 3.13</text><text class="blk" x="178" y="226" text-anchor="end">跳层 M=8</text><rect x="190" y="198" width="261.12" height="44" rx="6" fill="#f97316"/><text class="in" x="441.12" y="226" text-anchor="end">3.84</text><rect x="451.12" y="198" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="658.72" y="226" text-anchor="end">3.2</text><text class="on" x="680.72" y="226">7.04 ms</text><text class="muted" x="965" y="226">E* = 2.20</text><text class="blk" x="178" y="294" text-anchor="end">外部 1B</text><rect x="190" y="266" width="145.52" height="44" rx="6" fill="#f97316"/><text class="in" x="325.52" y="294" text-anchor="end">2.14</text><rect x="335.52" y="266" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="543.12" y="294" text-anchor="end">3.2</text><text class="on" x="565.12" y="294">5.34 ms</text><text class="muted" x="965" y="294">E* = 1.67</text><text class="blk" x="178" y="362" text-anchor="end">EAGLE / MTP</text><rect x="190" y="334" width="84.32" height="44" rx="6" fill="#f97316"/><text class="in" x="264.32" y="362" text-anchor="end">1.24</text><rect x="274.32" y="334" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="481.92" y="362" text-anchor="end">3.2</text><text class="on" x="503.92" y="362">4.44 ms</text><text class="muted" x="965" y="362">E* = 1.39</text><text class="blk" x="178" y="430" text-anchor="end">Medusa（2 头）</text><rect x="190" y="402" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="397.6" y="430" text-anchor="end">3.2</text><rect x="407.6" y="402" width="29.92" height="44" rx="6" fill="#2563eb"/><text class="on" x="449.52" y="430">3.64 ms</text><text class="muted" x="965" y="430">E* = 1.14</text><text class="blk" x="178" y="498" text-anchor="end">n-gram</text><rect x="190" y="470" width="217.6" height="44" rx="6" fill="#7c3aed"/><text class="in" x="397.6" y="498" text-anchor="end">3.2</text><text class="on" x="419.6" y="498">3.20 ms</text><text class="muted" x="965" y="498">E* = 1.0</text><line class="guide" x1="407.6" y1="118" x2="407.6" y2="514"/><text class="muted" x="415.6" y="112">普通 Decode 一步 3.2 ms</text><line class="grid" x1="190" y1="118" x2="190" y2="514"/><text class="tick" x="190" y="536" text-anchor="middle">0</text><line class="grid" x1="326" y1="118" x2="326" y2="514"/><text class="tick" x="326" y="536" text-anchor="middle">2</text><line class="grid" x1="462" y1="118" x2="462" y2="514"/><text class="tick" x="462" y="536" text-anchor="middle">4</text><line class="grid" x1="598" y1="118" x2="598" y2="514"/><text class="tick" x="598" y="536" text-anchor="middle">6</text><line class="grid" x1="734" y1="118" x2="734" y2="514"/><text class="tick" x="734" y="536" text-anchor="middle">8</text><line class="grid" x1="870" y1="118" x2="870" y2="514"/><text class="tick" x="870" y="536" text-anchor="middle">10</text><text class="tick" x="530" y="564" text-anchor="middle">一轮耗时（ms，理想口径 η = 1，H200）</text><text class="muted" x="1000" y="112" text-anchor="middle">盈亏平衡</text></svg>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg role="img" aria-labelledby="title desc" xmlns:xlink="http://www.w3.org/1999/xlink" width="1120" height="640" viewBox="0 0 806.4 460.8" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title id="title">每轮成本的结构算例：不代表算法实测排名</title>
+<desc id="desc">固定单流假设下的候选来源成本示例：起草、附加头与验证分别计入一轮时间，再计算所需平均产出门槛；这些数值不是各论文的实测排名。</desc>
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>generate_inference_figures.py</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 460.8
+L 806.4 460.8
+L 806.4 0
+L 0 0
+z
+" style="fill: #fbfcfe"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 169.344 350.208
+L 620.928 350.208
+L 620.928 92.16
+L 169.344 92.16
+z
+" style="fill: #fbfcfe"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m4ab17bad40" d="M 0 0
+L 0 3.5
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m4ab17bad40" x="169.344" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="169.344" y="366.348625" transform="rotate(-0 169.344 366.348625)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="255.36" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="255.36" y="366.348625" transform="rotate(-0 255.36 366.348625)">2</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="341.376" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="341.376" y="366.348625" transform="rotate(-0 341.376 366.348625)">4</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="427.392" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="427.392" y="366.348625" transform="rotate(-0 427.392 366.348625)">6</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="513.408" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="513.408" y="366.348625" transform="rotate(-0 513.408 366.348625)">8</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="599.424" y="350.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="599.424" y="366.348625" transform="rotate(-0 599.424 366.348625)">10</text>
+     </g>
+    </g>
+    <g id="text_7">
+     <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #344054" x="395.136" y="382.348625" transform="rotate(-0 395.136 382.348625)">一轮时间（ms）</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_7">
+      <path d="M 169.344 115.703294
+L 620.928 115.703294
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_8">
+      <defs>
+       <path id="m89075c0011" d="M 0 0
+L -3.5 0
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="115.703294" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="120.273606" transform="rotate(-0 162.344 120.273606)">等效保留 16 层</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_9">
+      <path d="M 169.344 157.895576
+L 620.928 157.895576
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="157.895576" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="162.465889" transform="rotate(-0 162.344 162.465889)">等效保留 8 层</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_11">
+      <path d="M 169.344 200.087859
+L 620.928 200.087859
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="200.087859" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="204.658171" transform="rotate(-0 162.344 204.658171)">外部 1B</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_13">
+      <path d="M 169.344 242.280141
+L 620.928 242.280141
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="242.280141" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="246.850454" transform="rotate(-0 162.344 246.850454)">单层 draft + LM Head</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_15">
+      <path d="M 169.344 284.472424
+L 620.928 284.472424
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="284.472424" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="289.042736" transform="rotate(-0 162.344 289.042736)">Medusa 两头示例</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_17">
+      <path d="M 169.344 326.664706
+L 620.928 326.664706
+" clip-path="url(#p9b27a96d59)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_18">
+      <g>
+       <use xlink:href="#m89075c0011" x="169.344" y="326.664706" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="162.344" y="331.235019" transform="rotate(-0 162.344 331.235019)">文本查找理想示例</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 169.344 103.889455
+L 461.7984 103.889455
+L 461.7984 127.517133
+L 169.344 127.517133
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 169.344 146.081737
+L 334.49472 146.081737
+L 334.49472 169.709415
+L 169.344 169.709415
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 169.344 188.27402
+L 261.38112 188.27402
+L 261.38112 211.901698
+L 169.344 211.901698
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 169.344 230.466302
+L 222.67392 230.466302
+L 222.67392 254.09398
+L 169.344 254.09398
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 169.344 272.658585
+L 169.344 272.658585
+L 169.344 296.286263
+L 169.344 296.286263
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 169.344 314.850867
+L 169.344 314.850867
+L 169.344 338.478545
+L 169.344 338.478545
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 461.7984 103.889455
+L 599.424 103.889455
+L 599.424 127.517133
+L 461.7984 127.517133
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 334.49472 146.081737
+L 472.12032 146.081737
+L 472.12032 169.709415
+L 334.49472 169.709415
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 261.38112 188.27402
+L 399.00672 188.27402
+L 399.00672 211.901698
+L 261.38112 211.901698
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 222.67392 230.466302
+L 360.29952 230.466302
+L 360.29952 254.09398
+L 222.67392 254.09398
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 169.344 272.658585
+L 306.9696 272.658585
+L 306.9696 296.286263
+L 169.344 296.286263
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 169.344 314.850867
+L 306.9696 314.850867
+L 306.9696 338.478545
+L 169.344 338.478545
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 599.424 103.889455
+L 599.424 103.889455
+L 599.424 127.517133
+L 599.424 127.517133
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 472.12032 146.081737
+L 472.12032 146.081737
+L 472.12032 169.709415
+L 472.12032 169.709415
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 399.00672 188.27402
+L 399.00672 188.27402
+L 399.00672 211.901698
+L 399.00672 211.901698
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 360.29952 230.466302
+L 360.29952 230.466302
+L 360.29952 254.09398
+L 360.29952 254.09398
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 306.9696 272.658585
+L 325.89312 272.658585
+L 325.89312 296.286263
+L 306.9696 296.286263
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 306.9696 314.850867
+L 306.9696 314.850867
+L 306.9696 338.478545
+L 306.9696 338.478545
+z
+" clip-path="url(#p9b27a96d59)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 169.344 350.208
+L 169.344 92.16
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 169.344 350.208
+L 620.928 350.208
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="604.58496" y="118.451341" transform="rotate(-0 604.58496 118.451341)">10.00 ms   E*=3.12</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="477.28128" y="160.643623" transform="rotate(-0 477.28128 160.643623)">7.04 ms   E*=2.20</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="404.16768" y="202.835906" transform="rotate(-0 404.16768 202.835906)">5.34 ms   E*=1.67</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="365.46048" y="245.028188" transform="rotate(-0 365.46048 245.028188)">4.44 ms   E*=1.39</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="331.05408" y="287.220471" transform="rotate(-0 331.05408 287.220471)">3.64 ms   E*=1.14</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="312.13056" y="329.412753" transform="rotate(-0 312.13056 329.412753)">3.20 ms   E*=1.00</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_23">
+     <path d="M 178.794 70.900847
+L 199.794 70.900847
+L 199.794 63.550847
+L 178.794 63.550847
+z
+" style="fill: #f97316"/>
+    </g>
+    <g id="text_20">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="208.194" y="70.900847" transform="rotate(-0 208.194 70.900847)">起草总时间</text>
+    </g>
+    <g id="patch_24">
+     <path d="M 281.694 70.900847
+L 302.694 70.900847
+L 302.694 63.550847
+L 281.694 63.550847
+z
+" style="fill: #7c3aed"/>
+    </g>
+    <g id="text_21">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="311.094" y="70.900847" transform="rotate(-0 311.094 70.900847)">验证</text>
+    </g>
+    <g id="patch_25">
+     <path d="M 353.094 70.900847
+L 374.094 70.900847
+L 374.094 63.550847
+L 353.094 63.550847
+z
+" style="fill: #2563eb"/>
+    </g>
+    <g id="text_22">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="382.494" y="70.900847" transform="rotate(-0 382.494 70.900847)">附加头</text>
+    </g>
+   </g>
+  </g>
+  <g id="text_23">
+   <text style="font-size: 18px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="44.352" y="32.256" transform="rotate(-0 44.352 32.256)">每轮成本的结构算例：不代表算法实测排名</text>
+  </g>
+  <g id="text_24">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="405.504" transform="rotate(-0 44.352 405.504)">串行起草取 k=4；验证统一假设 3.2 ms；Medusa 的附加头计入一轮，再按产出摊销。</text>
+  </g>
+  <g id="text_25">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="425.7792" transform="rotate(-0 44.352 425.7792)">跳层按等效完整 block 近似；文本查找忽略查询时间。E* = 一轮时间 / 3.2 ms。</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p9b27a96d59">
+   <rect x="169.344" y="92.16" width="451.584" height="258.048"/>
+  </clipPath>
+ </defs>
+</svg>

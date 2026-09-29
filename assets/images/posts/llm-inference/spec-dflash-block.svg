@@ -1,15 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="400" viewBox="0 0 1120 400" role="img" aria-labelledby="title desc">
-<title id="title">DFlash 的块扩散起草</title>
-<desc id="desc">DFlash 用小型块扩散模型一次并行前向产出整块候选（16 个），draft 成本对候选数近似平坦；串行起草方式出同样数量候选的成本随数量线性增长。</desc>
-<style>
-    .bg { fill: #fbfcfe; }
-    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
-    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .in { fill: #ffffff; font: 600 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .blk { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .on { fill: #344054; font: 600 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-  </style>
-<rect class="bg" width="1120" height="400" rx="20"/>
-<text class="label" x="60" y="70">DFlash：一次并行前向出整块</text><rect x="100" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="133" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="166" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="199" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="232" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="265" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="298" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="331" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="364" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="397" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="430" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="463" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="496" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="529" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="562" y="110" width="30" height="30" rx="4" fill="#f97316"/><rect x="595" y="110" width="30" height="30" rx="4" fill="#f97316"/><text class="blk" x="100" y="170">块扩散：一次并行前向，16 个候选（示意：3 层 draft、单步去噪）</text><rect x="100" y="220" width="34" height="30" rx="4" fill="#f97316"/><text class="blk" x="146" y="242">约 0.5 ms（并行一次）</text><rect x="100" y="280" width="340" height="30" rx="4" fill="#ffedd5" stroke="#f97316" stroke-width="2"/><text class="blk" x="452" y="302">约 5 ms（串行 16 步）</text><text class="note" x="100" y="356">两根条为同一时间轴（示意）；候选层数按论文配置待核对</text><text class="on" x="780" y="130">draft 成本对候选数近似平坦</text><text class="muted" x="780" y="164">多层特征注入 draft 每层 KV</text><text class="muted" x="780" y="196">embedding 与 LM Head 复用</text><text class="muted" x="780" y="228">实测 2.3–6.2x（Qwen3-8B，温度 0）</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
+<title id="title">DFlash：一个 anchor 与十五个新候选</title><desc id="desc">DFlash 的 block size 16 包含一个已知 anchor 与十五个待预测位置；小型块扩散 draft 一次并行前向生成十五个新候选，再由 target 验证。</desc>
+<style>text {font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;fill:#344054;} .muted {fill:#64748b;} .edge {stroke:#64748b;stroke-width:2;fill:none;}</style>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6" fill="#64748b"/></marker></defs>
+<rect width="1120" height="450" rx="20" fill="#fbfcfe"/>
+<text x="40" y="48" font-size="25" text-anchor="start" class="">DFlash：block size 16 = 1 个已知 anchor + 15 个待预测位置</text>
+<text x="40" y="86" font-size="18" text-anchor="start" class="muted">论文 v2 的块定义；颜色表示位置类型，图形不表示执行时间。</text>
+<rect x="50" y="120" width="52" height="45" rx="9" fill="#dbeafe" stroke="#2563eb"/><text x="76.0" y="149.5" font-size="16" text-anchor="middle" class="">x0</text>
+<rect x="50" y="310" width="52" height="45" rx="9" fill="#dbeafe" stroke="#2563eb"/><text x="76.0" y="339.5" font-size="17" text-anchor="middle" class="">x0</text>
+<rect x="114" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="140.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="114" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="140.0" y="339.5" font-size="17" text-anchor="middle" class="">t1</text>
+<rect x="178" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="204.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="178" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="204.0" y="339.5" font-size="17" text-anchor="middle" class="">t2</text>
+<rect x="242" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="268.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="242" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="268.0" y="339.5" font-size="17" text-anchor="middle" class="">t3</text>
+<rect x="306" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="332.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="306" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="332.0" y="339.5" font-size="17" text-anchor="middle" class="">t4</text>
+<rect x="370" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="396.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="370" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="396.0" y="339.5" font-size="17" text-anchor="middle" class="">t5</text>
+<rect x="434" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="460.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="434" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="460.0" y="339.5" font-size="17" text-anchor="middle" class="">t6</text>
+<rect x="498" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="524.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="498" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="524.0" y="339.5" font-size="17" text-anchor="middle" class="">t7</text>
+<rect x="562" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="588.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="562" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="588.0" y="339.5" font-size="17" text-anchor="middle" class="">t8</text>
+<rect x="626" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="652.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="626" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="652.0" y="339.5" font-size="17" text-anchor="middle" class="">t9</text>
+<rect x="690" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="716.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="690" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="716.0" y="339.5" font-size="17" text-anchor="middle" class="">t10</text>
+<rect x="754" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="780.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="754" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="780.0" y="339.5" font-size="17" text-anchor="middle" class="">t11</text>
+<rect x="818" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="844.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="818" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="844.0" y="339.5" font-size="17" text-anchor="middle" class="">t12</text>
+<rect x="882" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="908.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="882" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="908.0" y="339.5" font-size="17" text-anchor="middle" class="">t13</text>
+<rect x="946" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="972.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="946" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="972.0" y="339.5" font-size="17" text-anchor="middle" class="">t14</text>
+<rect x="1010" y="120" width="52" height="45" rx="9" fill="#f2f4f7" stroke="#98a2b3"/><text x="1036.0" y="149.5" font-size="16" text-anchor="middle" class="">[M]</text>
+<rect x="1010" y="310" width="52" height="45" rx="9" fill="#ffedd5" stroke="#f97316"/><text x="1036.0" y="339.5" font-size="17" text-anchor="middle" class="">t15</text>
+<path class="edge" d="M560 169 L560 205" marker-end="url(#arrow)"/>
+<rect x="330" y="210" width="460" height="65" rx="9" fill="#ddd6fe" stroke="#7c3aed"/><text x="560.0" y="249.5" font-size="23" text-anchor="middle" class="">块扩散 draft：一次并行前向</text>
+<path class="edge" d="M560 277 L560 307" marker-end="url(#arrow)"/>
+<text x="40" y="235" font-size="18" text-anchor="start" class="">target 多层特征</text>
+<text x="40" y="265" font-size="18" text-anchor="start" class="muted">注入 draft 各层 KV</text>
+<path class="edge" d="M225 243 L325 243" marker-end="url(#arrow)"/>
+<text x="50" y="394" font-size="20" text-anchor="start" class="">蓝：已经确定的 anchor　橙：本轮生成的 15 个新候选，随后交给 target 验证</text>
+<text x="50" y="427" font-size="18" text-anchor="start" class="muted">增大块长仍会增加计算与临时状态；一次前向不意味着任意块长同样耗时。</text>
+</svg>

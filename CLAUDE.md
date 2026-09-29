@@ -22,7 +22,12 @@ Jekyll 博客（GitHub Pages，push main 自动部署）。`_drafts/` 不参与�
 
 - 结构：开局接上一篇钩子（1–2 段）→ 机制分析若干节 → 实测对照（公开基准做现实修正）→ 选型与取舍（场景表）→ 小结（结尾预告下一篇）→ 参考与延伸阅读（编号引用 [n] + 链接）。
 - 统一口径：Llama 3.1 8B、H200 SXM（dense BF16 989 TFLOPS、HBM 4.8 TB/s）、上下文 L=2048、理想口径 η=1；FLOPs/带宽用十进制前缀，显存容量用二进制前缀。
-- 系列基准数字（已建立，沿用勿重推）：Prefill 2048 ≈ 30.8 TFLOPs → 31 ms；Decode B=1 每步 15.3 GB → 3.2 ms、16.1 GFLOPs/token；KV 每路 256 MiB（GQA）；实测 BF16 B=1 每步约 5.75 ms（T_other ≈ 2.6 ms）。
+- 系列数值口径（2026-09-29 校订）：Prefill 使用因果有效 attention FLOPs `2L(L+1)d`，2048 token 约 29.7 TFLOPs → 纯计算下界约 30 ms；32768 token 约 738.9 TFLOPs → 747 ms。满矩阵计数须单独标注，不能作为所有因果实现的延迟下界。
+- Decode B=1 主要读流量约 15.3 GB → 带宽下界约 3.2 ms，主要计算量约 16.1 GFLOPs/token；GQA KV 每历史 token 128 KiB、2048 token 每路 256 MiB。常驻权重与每步读取量分开统计。
+- 容量算例统一假设：扣除 target 全部常驻权重与其他预留后，KV 预算 120 GB（约 111.8 GiB）；BF16 target KV 最多 447 路。外部 1B draft 再扣约 2.5 GB 权重及每路 64 MiB 持久 KV，乐观上限 350 路，额外 workspace/临时状态另计。
+- 公开吞吐不倒推为排除 TTFT 的 TPOT，不据此拟合固定 2.6 ms 开销。汇总 Roofline 的 max 是宽松下界；计算/带宽交点不是“免费行数”或投机开关。数值算例、实测与经验建议分别标注。
+- 引用性能结果注明模型、硬件、后端版本、负载、采样和基线。异构实验不做排名或精确模型验证；论文有版本差异时固定版本。ITL 分位数与请求级 TPOT 分位数分别统计。
+- 修改算例后运行 `python tools/generate_inference_figures.py --font <本机中文字体路径>` 同步相关 SVG，并核对正文与图注。此脚本仅是可选绘图维护工具（依赖 matplotlib），不参与 Jekyll 构建。
 - Front matter：`categories: [模型与系统, LLM 推理]`；tags 含 LLM 与本篇关键词；`math: true`。
 - 提纲与状态记录在 `docs/llm-inference-series-outline.md`，成稿/配图/发布状态同步更新。
 

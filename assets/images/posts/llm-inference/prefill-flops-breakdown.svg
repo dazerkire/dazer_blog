@@ -1,32 +1,222 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="330" viewBox="0 0 1120 330" role="img" aria-labelledby="title desc">
-  <title id="title">Prefill 计算量构成</title>
-  <desc id="desc">Llama 3.1 8B 在 L=2048 时一次 Prefill 约 30.8 TFLOPs：SwiGLU MLP 约 23.1（75%），QKV 与输出投影约 5.5（18%），attention 约 2.2（7%）。</desc>
-  <style>
-    .bg { fill: #fbfcfe; }
-    .title { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .in { fill: #ffffff; font: 600 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .small { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
-  </style>
-  <rect class="bg" width="1120" height="330" rx="20"/>
-
-  <text class="title" x="90" y="62">Llama 3.1 8B · L = 2048：一次 Prefill ≈ 30.8 TFLOPs 的构成（32 层合计）</text>
-
-  <!-- stacked bar: 940px wide, MLP 75.0% = 705, QKV+O 17.9% = 168, attn 7.1% = 67 -->
-  <rect x="90" y="100" width="705" height="80" fill="#2563eb"/>
-  <rect x="795" y="100" width="168" height="80" fill="#f97316"/>
-  <rect x="963" y="100" width="67" height="80" fill="#16a34a"/>
-  <line x1="795" y1="100" x2="795" y2="180" stroke="#fbfcfe" stroke-width="3"/>
-  <line x1="963" y1="100" x2="963" y2="180" stroke="#fbfcfe" stroke-width="3"/>
-
-  <text class="in" x="442" y="134" text-anchor="middle">SwiGLU MLP（6Ldm）</text>
-  <text class="in" x="442" y="162" text-anchor="middle">≈ 23.1 TFLOPs · 75%</text>
-
-  <!-- legend for the two narrow segments -->
-  <rect x="90" y="214" width="18" height="18" rx="3" fill="#f97316"/>
-  <text class="small" x="120" y="229">QKV + 输出投影（5Ld²）≈ 5.5 TFLOPs · 18%</text>
-  <rect x="540" y="214" width="18" height="18" rx="3" fill="#16a34a"/>
-  <text class="small" x="570" y="229">attention（4L²d）≈ 2.2 TFLOPs · 7%</text>
-
-  <text class="small" x="90" y="292">attention 的 L² 项随上下文增长最快：L 更大时，它的占比会继续上升。</text>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg role="img" aria-labelledby="title desc" xmlns:xlink="http://www.w3.org/1999/xlink" width="1120" height="470" viewBox="0 0 806.4 338.4" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title id="title">Prefill 的因果有效 FLOPs：Llama 3.1 8B，L = 2048</title>
+<desc id="desc">Llama 3.1 8B 在序列长度 2048 时一次 Prefill 的计算量构成：SwiGLU MLP 约占 77.8%，QKV 与输出投影约占 18.5%，因果 attention 约占 3.7%。</desc>
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>generate_inference_figures.py</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 338.4
+L 806.4 338.4
+L 806.4 0
+L 0 0
+z
+" style="fill: #fbfcfe"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 225.792 240.264
+L 661.248 240.264
+L 661.248 77.832
+L 225.792 77.832
+z
+" style="fill: #fbfcfe"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m4ab17bad40" d="M 0 0
+L 0 3.5
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m4ab17bad40" x="225.792" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="225.792" y="256.404625" transform="rotate(-0 225.792 256.404625)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="312.8832" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="312.8832" y="256.404625" transform="rotate(-0 312.8832 256.404625)">5</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="399.9744" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="399.9744" y="256.404625" transform="rotate(-0 399.9744 256.404625)">10</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="487.0656" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="487.0656" y="256.404625" transform="rotate(-0 487.0656 256.404625)">15</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="574.1568" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="574.1568" y="256.404625" transform="rotate(-0 574.1568 256.404625)">20</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="661.248" y="240.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="661.248" y="256.404625" transform="rotate(-0 661.248 256.404625)">25</text>
+     </g>
+    </g>
+    <g id="text_7">
+     <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #344054" x="443.52" y="272.404625" transform="rotate(-0 443.52 272.404625)">TFLOPs（32 层合计）</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_7">
+      <path d="M 225.792 101.366182
+L 661.248 101.366182
+" clip-path="url(#p24d0aba0d9)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_8">
+      <defs>
+       <path id="m89075c0011" d="M 0 0
+L -3.5 0
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m89075c0011" x="225.792" y="101.366182" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="218.792" y="105.936494" transform="rotate(-0 218.792 105.936494)">SwiGLU MLP</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_9">
+      <path d="M 225.792 159.048
+L 661.248 159.048
+" clip-path="url(#p24d0aba0d9)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m89075c0011" x="225.792" y="159.048" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="218.792" y="163.712063" transform="rotate(-0 218.792 163.712063)">QKV + 输出投影</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_11">
+      <path d="M 225.792 216.729818
+L 661.248 216.729818
+" clip-path="url(#p24d0aba0d9)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m89075c0011" x="225.792" y="216.729818" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="218.792" y="221.300131" transform="rotate(-0 218.792 221.300131)">因果 attention</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 225.792 85.215273
+L 627.974706 85.215273
+L 627.974706 117.517091
+L 225.792 117.517091
+z
+" clip-path="url(#p24d0aba0d9)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 225.792 142.897091
+L 321.549787 142.897091
+L 321.549787 175.198909
+L 225.792 175.198909
+z
+" clip-path="url(#p24d0aba0d9)" style="fill: #f97316"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 225.792 200.578909
+L 244.952909 200.578909
+L 244.952909 232.880727
+L 225.792 232.880727
+z
+" clip-path="url(#p24d0aba0d9)" style="fill: #7c3aed"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 225.792 240.264
+L 225.792 77.832
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 225.792 240.264
+L 661.248 240.264
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 11px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="634.07109" y="104.245088" transform="rotate(-0 634.07109 104.245088)">23.09 · 77.8%</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 11px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="327.646171" y="161.926906" transform="rotate(-0 327.646171 161.926906)">5.50 · 18.5%</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 11px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="251.049293" y="219.608724" transform="rotate(-0 251.049293 219.608724)">1.10 · 3.7%</text>
+   </g>
+  </g>
+  <g id="text_14">
+   <text style="font-size: 18px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="44.352" y="23.688" transform="rotate(-0 44.352 23.688)">Prefill 的因果有效 FLOPs：Llama 3.1 8B，L = 2048</text>
+  </g>
+  <g id="text_15">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="297.792" transform="rotate(-0 44.352 297.792)">合计约 29.69 TFLOPs；attention 使用 2L(L+1)d，而非满矩阵 4L²d。</text>
+  </g>
+  <g id="text_16">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="312.6816" transform="rotate(-0 44.352 312.6816)">不含 embedding、LM Head 与小算子；这里只统计工作量，不表示实际耗时。</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p24d0aba0d9">
+   <rect x="225.792" y="77.832" width="435.456" height="162.432"/>
+  </clipPath>
+ </defs>
 </svg>

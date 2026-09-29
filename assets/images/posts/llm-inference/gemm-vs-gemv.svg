@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
   <title id="title">Prefill 的 GEMM 与 Decode 的 GEMV</title>
-  <desc id="desc">左：Prefill 中 L 个 token 的激活矩阵乘权重矩阵，同一列权重被所有 token 复用；右：Decode 中单个 token 的向量乘权重矩阵，每个权重只被使用一次。</desc>
+  <desc id="desc">Prefill 与 Decode 矩阵乘形态对比：Prefill 是矩阵乘矩阵，每列权重被所有 token 复用；Decode 是矩阵乘向量，每个权重只被单个新 token 使用一次。</desc>
   <style>
     .bg { fill: #fbfcfe; }
     .panel { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
@@ -45,7 +45,7 @@
   <path class="flow" marker-end="url(#arr2)" d="M262 232 C 320 245, 370 240, 397 238"/>
 
   <text class="em-b" x="90" y="306">同一列权重被 L 个 token 复用</text>
-  <text class="small" x="90" y="336">权重读一次，参与 L 次乘加</text>
+  <text class="small" x="90" y="336">理想读取一次，参与 L 次乘加</text>
 
   <!-- divider -->
   <line x1="575" y1="40" x2="575" y2="360" stroke="#dce3ea" stroke-width="1.5" stroke-dasharray="5 8"/>
@@ -74,5 +74,5 @@
   <text class="small" x="640" y="336">权重读一次，只使用一次</text>
 
   <!-- bottom note -->
-  <text class="label" x="560" y="412" text-anchor="middle">两个阶段要读取的权重字节数相同，差别全在复用次数 —— 即算术强度</text>
+  <text class="label" x="560" y="412" text-anchor="middle">图示仅比较权重复用；实际总流量还包括激活、KV 与重复加载。</text>
 </svg>

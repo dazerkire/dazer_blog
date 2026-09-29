@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="460" viewBox="0 0 1120 460" role="img" aria-labelledby="title desc">
   <title id="title">分页管理：固定大小的 block 与 block table</title>
-  <desc id="desc">两个请求的逻辑块通过 block table 映射到物理显存中散布的固定大小块；请求 1 与请求 2 的前三个逻辑块指向同一批物理块，前缀共享只存一份。</desc>
+  <desc id="desc">分页管理：两个请求的逻辑块经 block table 映射到物理显存中散布的固定大小块，相同前缀的三个逻辑块指向同一批物理块，只存一份。</desc>
   <style>
     .bg { fill: #fbfcfe; }
     .lane { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }

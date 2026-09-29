@@ -86,7 +86,7 @@ $$
 2L^2d + 2L^2d = 4L^2d
 $$
 
-为简化推导，这里按满矩阵计；严格考虑因果掩码时，每个位置只能关注自身及之前的 Token，有效计算的是下三角部分，约为其一半。
+上式按完整的 $L\times L$ 矩阵计数。因果 attention 只需要下三角区域的 $L(L+1)/2$ 个位置对，有效计算量为 $2L(L+1)d$，约为满矩阵的一半。支持跳过上三角块的 kernel 能利用这一结构，但边界 tile 仍可能做额外工作。下文数值统一采用因果有效 FLOPs，不能把满矩阵计数除以峰值后称为所有实现的延迟下界。
 
 注意 $L$ 在两类计算中出现的方式不同：投影和 MLP 是 token 与参数相乘，每个 token 独立过一遍权重，$L$ 只出现一次；$QK^\top$ 和 $AV$ 是 token 与 token 相乘，$L$ 个位置两两配对，才会出现 $L^2$。
 
@@ -111,7 +111,7 @@ $$
     src="/assets/images/posts/llm-inference/gemm-vs-gemv.svg"
     alt="Prefill 与 Decode 矩阵乘形态对比：Prefill 是矩阵乘矩阵，每列权重被所有 token 复用；Decode 是矩阵乘向量，每个权重只被单个新 token 使用一次。"
     style="width: 100%; max-width: 1120px; height: auto;">
-  <figcaption class="text-muted mt-2">图 1：Prefill（GEMM）与 Decode（GEMV）的权重复用度对比。两种形态读取的权重字节数相同，差别全在每个权重服务了多少个 Token。</figcaption>
+  <figcaption class="text-muted mt-2">图 1：Prefill（GEMM）与 Decode（GEMV）的权重复用度对比。图中比较的是理想权重复用；实际流量还包括激活、KV 和重复加载。</figcaption>
 </figure>
 
 新 Token 仍要计算自己的 $Q,K,V$。但历史 Token 的 $K,V$ 已在每一层中缓存，无需重新从头计算：
@@ -157,21 +157,21 @@ $$
 \begin{aligned}
 \text{QKV + output} &\approx 5Ld^2 &&\approx 171.8\ \text{GFLOPs}\\
 \text{SwiGLU MLP} &\approx 6Ldm &&\approx 721.6\ \text{GFLOPs}\\
-\text{attention} &\approx 4L^2d &&\approx 68.7\ \text{GFLOPs}
+\text{causal attention} &\approx 2L(L+1)d &&\approx 34.4\ \text{GFLOPs}
 \end{aligned}
 $$
 
-这里的 $5Ld^2$ 来自 GQA：Q 与 output projection 各为 $2Ld^2$；K、V 的总投影维度只有 $d/4$，合计再增加 $Ld^2$。合计约 $962.1$ GFLOPs/层，32 层约为 $30.8$ TFLOPs。这说明在这个长度下，MLP 仍是最大的单项；attention 已不可忽略，但尚未超过 MLP。
+这里的 $5Ld^2$ 来自 GQA：Q 与 output projection 各为 $2Ld^2$；K、V 的总投影维度只有 $d/4$，合计再增加 $Ld^2$。合计约 $927.7$ GFLOPs/层，32 层约为 $29.7$ TFLOPs。这说明在这个长度下，MLP 仍是最大的单项；attention 已不可忽略，但尚未超过 MLP。
 
 <figure class="text-center mt-3 mb-4">
   <img
     src="/assets/images/posts/llm-inference/prefill-flops-breakdown.svg"
-    alt="Llama 3.1 8B 在序列长度 2048 时一次 Prefill 的计算量构成：SwiGLU MLP 约占 75%，QKV 与输出投影约占 18%，attention 约占 7%。"
+    alt="Llama 3.1 8B 在序列长度 2048 时一次 Prefill 的计算量构成：SwiGLU MLP 约占 77.8%，QKV 与输出投影约占 18.5%，因果 attention 约占 3.7%。"
     style="width: 100%; max-width: 1120px; height: auto;">
   <figcaption class="text-muted mt-2">图 2：Llama 3.1 8B 在 L=2048 时一次 Prefill 的计算量构成（32 层合计）。</figcaption>
 </figure>
 
-LM Head 的口径需要单独说明。设词表大小为 $V$：在线生成的 Prefill 只需要最后一个位置的 logits，因此 LM Head 的计算量为 $O(dV)$；训练或通用前向若要返回全部 $L$ 个位置的 logits，则会变为 $O(LdV)$。本文讨论前一种在线推理路径，输入 embedding 也只是在当前 Token 上做 lookup。对这个 Llama 3.1 8B 例子，LM Head 约为 $2\times4096\times128256\approx1.05$ GFLOPs，相对 $30.8$ TFLOPs 的 Transformer block 可以忽略。
+LM Head 的口径需要单独说明。设词表大小为 $V$：在线生成的 Prefill 只需要最后一个位置的 logits，因此 LM Head 的计算量为 $O(dV)$；训练或通用前向若要返回全部 $L$ 个位置的 logits，则会变为 $O(LdV)$。本文讨论前一种在线推理路径，输入 embedding 也只是在当前 Token 上做 lookup。对这个 Llama 3.1 8B 例子，LM Head 约为 $2\times4096\times128256\approx1.05$ GFLOPs，相对 $29.7$ TFLOPs 的 Transformer block 可以忽略。
 
 同一配置下，GQA 的 KV Cache 约为：
 
@@ -221,8 +221,8 @@ $$
 为与后文的公开基准对齐，以下统一采用 H200 SXM。它与 H100 同属 Hopper 架构，dense BF16 计算峰值相同，这里取 $989$ TFLOPS 与 $4.8$ TB/s HBM3e 带宽，不采用厂商表中“开启结构化稀疏”时的更高峰值。[5] 上述 2048-token Prefill 的纯计算下界约为：
 
 $$
-\frac{30.8\ \text{TFLOPs}}{989\ \text{TFLOPS}}
-\approx 31\ \text{ms}
+\frac{29.7\ \text{TFLOPs}}{989\ \text{TFLOPS}}
+\approx 30\ \text{ms}
 $$
 
 对 batch=1 的 Decode，字节量应按每步真正遍历的权重估计，而不是机械使用完整参数量：Transformer block 约为 $6.98$B 参数，LM Head 约为 $0.53$B 参数，合计约 $7.5$B 个 BF16 参数，即约 $15.0$ GB。输入 embedding 仅做当前 Token 的 lookup，不会在每一步读取整张 embedding 表；再加上约 256 MiB 的已有 GQA KV Cache，带宽下界约为：
@@ -232,26 +232,17 @@ $$
 \approx 3.2\ \text{ms/token}
 $$
 
-把这两个下界放回 Roofline 上对照：H200 的转折点为 $989\ \text{TFLOPS}/4.8\ \text{TB/s}\approx 206$ FLOPs/字节。2048-token Prefill 的算术强度约为 $30.8\ \text{TFLOPs}/15.0\ \text{GB}\approx 2000$，在转折点右侧，落在计算平台上，因此下界由算力给出（约 31 ms）；batch=1 Decode 的算术强度约为 $16.1\ \text{GFLOPs}/15.3\ \text{GB}\approx 1$，深在斜线区，算力利用率上限约 $1/206\approx 0.5\%$，下界由带宽给出（约 3.2 ms/token）。
+估算算术强度时也要说明访存口径：下面的 Prefill 仅计主要权重流量，尚未纳入激活、中间结果和 KV 写入；它用于判断主要线性层的趋势，不能替代逐算子分析。把这两个下界放回 Roofline 上对照：H200 的转折点为 $989\ \text{TFLOPS}/4.8\ \text{TB/s}\approx 206$ FLOPs/字节。2048-token Prefill 的算术强度约为 $29.7\ \text{TFLOPs}/15.0\ \text{GB}\approx 2000$，在转折点右侧，落在计算平台上，因此下界由算力给出（约 30 ms）；batch=1 Decode 的算术强度约为 $16.1\ \text{GFLOPs}/15.3\ \text{GB}\approx 1$，深在斜线区，算力利用率上限约 $1/206\approx 0.5\%$，下界由带宽给出（约 3.2 ms/token）。
 
-这两个数字都不是实际服务延迟的承诺。峰值吞吐和峰值带宽很难同时、持续地达到；attention、归一化、采样、kernel launch、内存管理以及多 GPU 通信也未包含在内。更接近现实的表达是：
+这两个数字都不是实际服务延迟的承诺。上式对整段工作量取一次 max，只是宽松下界；实际模型中，不同算子可能分别受计算或带宽限制，且存在串行依赖。更细的分析要按算子或可重叠的执行阶段，统计 FLOPs、读写量、有效利用率与额外开销。不能假定整段前向同时达到计算和带宽峰值，也不能把下界与实测的差值全部归给一个固定常数。
 
-$$
-T_{\mathrm{real}}
-\gtrsim
-\max\left(
-\frac{F}{\eta_cP_{\mathrm{peak}}},
-\frac{B}{\eta_bBW_{\mathrm{peak}}}
-\right)+T_{\mathrm{other}}
-$$
+NVIDIA 的公开基准提供了另一个观测口径：H200、Model Optimizer v0.21.1、TensorRT-LLM v0.15、Llama 3.1 8B、输入 2048 / 输出 128、batch=1 时，BF16 的输出吞吐为 173.80 tokens/s。[6] 这是请求级基准的吞吐统计，不是排除 TTFT 后的 Decode TPOT。其倒数约 5.75 ms/output token 仍包含测试时间的摊销，不能当成每一步 Decode 的实测延迟，更不能用它减去 3.2 ms 推出“固定开销 2.6 ms”。TensorRT-LLM 对吞吐的定义可见对应版本的性能说明。[7]
 
-其中 $\eta_c$、$\eta_b<1$ 表示实际计算与带宽利用率。
-
-不过，下界的数量级是有现实参照的。NVIDIA 公布的 H200、TensorRT-LLM、Llama 3.1 8B BF16、batch=1 基准为约 $173.8$ output tokens/s，即约 $5.75$ ms/token。[6] 这与这里的硬件、模型规模和精度已经对齐，但上下文长度、请求形态与统计口径仍可能不同，因此不能用来验证某个精确数值。它说明的是，$3.2$ ms/token 的理想带宽下界与约 $5.75$ ms/token 的公开结果处于同一量级，剩余差距来自有效带宽、算子效率与未计入的开销。比较前仍须对齐 batch、上下文长度、并行方式和统计口径。
+要校准本文模型，应在相同硬件、模型、精度、上下文和并发下，另外采集 TTFT、逐步 Decode 时长、请求级 TPOT，以及算子 profile。公开吞吐表可以比较该基准内不同配置的整体效率，不能直接验证这里的 Decode 下界。
 
 ## 小结
 
-Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。放在 Roofline 上，就是 Prefill 的算术强度远在转折点之上，速度由计算峰值决定；Decode 深在转折点之下，速度由显存带宽决定。
+Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已知序列，能够形成较大的 GEMM；后者每步只处理一个新 Token，在小 batch 下权重复用不足，并不断访问 KV Cache，更容易成为显存带宽问题。放在 Roofline 上，就是 Prefill 的算术强度远在转折点之上，主要线性层更可能受计算限制；小 batch Decode 的权重复用低，更可能受显存带宽限制。实际瓶颈仍需按算子测量。
 
 这给出了阅读后续优化方法的一条主线：有的技术减少 FLOPs，有的减少字节搬运，有的提高权重复用，有的压缩 KV Cache，有的则试图打破逐 Token 的串行过程。只有先区分瓶颈来自计算、带宽还是串行依赖，才知道一个优化为什么会有效，以及它会牺牲什么。
 
@@ -263,3 +254,5 @@ Prefill 和 Decode 的差异来自自回归生成本身：前者一次处理已�
 4. [Williams et al. — Roofline: An Insightful Visual Performance Model for Multicore Architectures](https://doi.org/10.1145/1498765.1498785)
 5. [NVIDIA H200 Tensor Core GPU](https://www.nvidia.com/en-us/data-center/h200/)
 6. [NVIDIA Model Optimizer — Inference benchmark examples](https://github.com/NVIDIA/Model-Optimizer/blob/main/examples/benchmark.md)
+
+7. [NVIDIA TensorRT-LLM v0.15.0 — Performance overview（吞吐统计口径）](https://github.com/NVIDIA/TensorRT-LLM/blob/v0.15.0/docs/source/performance/perf-overview.md)

@@ -1,17 +1,520 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
-<title id="title">并发下的服务吞吐：各配置的曲线与渐近线</title>
-<desc id="desc">吞吐随并发 B 的变化（理想口径）：普通 Decode 渐近 17.9k tok/s；外部 1B draft 的链形投机渐近 24.5k（1.37x，draft 与验证混合主导）；单层头链形渐近约 38k（2.1x，计算接管）；45 节点大树在 B 超过个位数后塌向约 5k，仅为普通的六成。</desc>
-<style>
-    .bg { fill: #fbfcfe; }
-    .grid { stroke: #dce3ea; stroke-width: 1; stroke-dasharray: 5 8; }
-    .axis { stroke: #344054; stroke-width: 2.5; }
-    .guide { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5 7; }
-    .label { fill: #344054; font: 600 22px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .tick { fill: #64748b; font: 500 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .muted { fill: #64748b; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .note { fill: #475569; font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .ser { font: 700 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .vlab { font: 700 19px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-  </style>
-<rect class="bg" width="1120" height="620" rx="20"/>
-<line class="grid" x1="160" y1="480" x2="960" y2="480"/><text class="tick" x="144" y="487" text-anchor="end">0k</text><line class="grid" x1="160" y1="387.5" x2="960" y2="387.5"/><text class="tick" x="144" y="394.5" text-anchor="end">10k</text><line class="grid" x1="160" y1="295" x2="960" y2="295"/><text class="tick" x="144" y="302" text-anchor="end">20k</text><line class="grid" x1="160" y1="202.5" x2="960" y2="202.5"/><text class="tick" x="144" y="209.5" text-anchor="end">30k</text><line class="grid" x1="160" y1="110" x2="960" y2="110"/><text class="tick" x="144" y="117" text-anchor="end">40k</text><line class="grid" x1="170" y1="100" x2="170" y2="488"/><text class="tick" x="170" y="516" text-anchor="middle">0</text><line class="grid" x1="326" y1="100" x2="326" y2="488"/><text class="tick" x="326" y="516" text-anchor="middle">100</text><line class="grid" x1="482" y1="100" x2="482" y2="488"/><text class="tick" x="482" y="516" text-anchor="middle">200</text><line class="grid" x1="638" y1="100" x2="638" y2="488"/><text class="tick" x="638" y="516" text-anchor="middle">300</text><line class="grid" x1="794" y1="100" x2="794" y2="488"/><text class="tick" x="794" y="516" text-anchor="middle">400</text><line class="grid" x1="950" y1="100" x2="950" y2="488"/><text class="tick" x="950" y="516" text-anchor="middle">500</text><line class="guide" x1="160" y1="314.425" x2="960" y2="314.425"/><text class="muted" x="178" y="306.425">17.9k 渐近线</text><line class="guide" x1="160" y1="253.375" x2="960" y2="253.375"/><text class="muted" x="178" y="245.375">24.5k 渐近线</text><line class="guide" x1="160" y1="128.5" x2="960" y2="128.5"/><text class="muted" x="178" y="120.5">38k 渐近线</text><line class="axis" x1="160" y1="480" x2="980" y2="480"/><path class="axis" d="M980 480 l-14 -8 M980 480 l-14 8"/><line class="axis" x1="160" y1="480" x2="160" y2="85"/><path class="axis" d="M160 85 l-8 14 M160 85 l8 14"/><polyline fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="177.8,466.413 185.6,454.885 193.4,444.98 201.2,436.378 209,428.838 216.8,422.175 224.6,416.245 232.4,410.931 240.2,406.144 248,401.809 255.8,397.864 263.6,394.259 271.4,390.952 279.2,387.908 287,385.096 294.8,382.49 302.6,380.07 310.4,377.815 318.2,375.71 326,373.739 333.8,371.891 341.6,370.154 349.4,368.519 357.2,366.977 365,365.52 372.8,364.141 380.6,362.834 388.4,361.595 396.2,360.416 404,359.295 411.8,358.227 419.6,357.209 427.4,356.237 435.2,355.307 443,354.418 450.8,353.567 458.6,352.751 466.4,351.968 474.2,351.216 482,350.494 489.8,349.799 497.6,349.13 505.4,348.486 513.2,347.866 521,347.267 528.8,346.69 536.6,346.132 544.4,345.593 552.2,345.072 560,344.568 567.8,344.08 575.6,343.608 583.4,343.15 591.2,342.707 599,342.277 606.8,341.859 614.6,341.454 622.4,341.061 630.2,340.679 638,340.307 645.8,339.946 653.6,339.595 661.4,339.253 669.2,338.92 677,338.596 684.8,338.28 692.6,337.973 700.4,337.673 708.2,337.381 716,337.096 723.8,336.817 731.6,336.546 739.4,336.281 747.2,336.022 755,335.769 762.8,335.522 770.6,335.281 778.4,335.045 786.2,334.814 794,334.588 801.8,334.368 809.6,334.151 817.4,333.94 825.2,333.733 833,333.53 840.8,333.332 848.6,333.137 856.4,332.946 864.2,332.76 872,332.577 879.8,332.397 887.6,332.221 895.4,332.048 903.2,331.879 911,331.713 918.8,331.55 926.6,331.39 934.4,331.232 942.2,331.078 950,330.927"/><text class="ser" fill="#2563eb" x="962" y="337.927">普通 Decode</text><polyline fill="none" stroke="#f97316" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="177.8,453.051 185.6,430.859 193.4,412.266 201.2,396.463 209,382.865 216.8,371.041 224.6,360.665 232.4,351.486 240.2,343.309 248,335.978 255.8,329.368 263.6,323.377 271.4,317.924 279.2,312.937 287,308.361 294.8,304.146 302.6,300.251 310.4,296.641 318.2,293.286 326,290.16 333.8,287.24 341.6,284.506 349.4,281.941 357.2,279.531 365,278.051 372.8,277.206 380.6,276.418 388.4,275.68 396.2,274.988 404,274.339 411.8,273.727 419.6,273.15 427.4,272.606 435.2,272.091 443,271.603 450.8,271.139 458.6,270.699 466.4,270.281 474.2,269.882 482,269.502 489.8,269.139 497.6,268.793 505.4,268.461 513.2,268.143 521,267.839 528.8,267.547 536.6,267.267 544.4,266.998 552.2,266.739 560,266.49 567.8,266.25 575.6,266.018 583.4,265.795 591.2,265.58 599,265.373 606.8,265.172 614.6,264.978 622.4,264.79 630.2,264.609 638,264.433 645.8,264.262 653.6,264.097 661.4,263.937 669.2,263.782 677,263.631 684.8,263.485 692.6,263.343 700.4,263.204 708.2,263.07 716,262.939 723.8,262.812 731.6,262.688 739.4,262.568 747.2,262.45 755,262.336 762.8,262.225 770.6,262.116 778.4,262.01 786.2,261.906 794,261.805 801.8,261.707 809.6,261.611 817.4,261.517 825.2,261.425 833,261.335 840.8,261.247 848.6,261.162 856.4,261.078 864.2,260.996 872,260.915 879.8,260.837 887.6,260.76 895.4,260.684 903.2,260.611 911,260.538 918.8,260.468 926.6,260.398 934.4,260.33 942.2,260.263 950,260.198"/><text class="ser" fill="#f97316" x="962" y="267.198">外部 1B + 链</text><polyline fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="177.8,446.8 185.6,417.774 193.4,392.181 201.2,369.447 209,349.118 216.8,330.832 224.6,314.295 232.4,299.267 240.2,285.552 248,272.984 255.8,261.425 263.6,250.759 271.4,240.885 279.2,231.719 287,223.188 294.8,215.226 302.6,207.78 310.4,200.801 318.2,194.246 326,188.078 333.8,182.263 341.6,176.772 349.4,171.578 357.2,166.658 365,163.932 372.8,162.699 380.6,161.549 388.4,160.474 396.2,159.466 404,158.52 411.8,157.629 419.6,156.79 427.4,155.998 435.2,155.248 443,154.539 450.8,153.866 458.6,153.226 466.4,152.618 474.2,152.04 482,151.488 489.8,150.961 497.6,150.458 505.4,149.977 513.2,149.516 521,149.075 528.8,148.652 536.6,148.245 544.4,147.855 552.2,147.48 560,147.119 567.8,146.771 575.6,146.436 583.4,146.114 591.2,145.802 599,145.501 606.8,145.211 614.6,144.93 622.4,144.658 630.2,144.396 638,144.141 645.8,143.895 653.6,143.656 661.4,143.424 669.2,143.2 677,142.982 684.8,142.77 692.6,142.564 700.4,142.365 708.2,142.17 716,141.981 723.8,141.798 731.6,141.619 739.4,141.445 747.2,141.275 755,141.11 762.8,140.949 770.6,140.792 778.4,140.639 786.2,140.489 794,140.343 801.8,140.201 809.6,140.062 817.4,139.926 825.2,139.794 833,139.664 840.8,139.538 848.6,139.414 856.4,139.293 864.2,139.174 872,139.058 879.8,138.945 887.6,138.834 895.4,138.725 903.2,138.619 911,138.514 918.8,138.412 926.6,138.312 934.4,138.214 942.2,138.117 950,138.023"/><text class="ser" fill="#7c3aed" x="962" y="145.023">单层头 + 链</text><polyline fill="none" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="177.8,441.627 185.6,436.114 193.4,433.906 201.2,432.717 209,431.973 216.8,431.465 224.6,431.095 232.4,430.813 240.2,430.592 248,430.414 255.8,430.267 263.6,430.144 271.4,430.04 279.2,429.95 287,429.871 294.8,429.803 302.6,429.742 310.4,429.688 318.2,429.639 326,429.596 333.8,429.556 341.6,429.52 349.4,429.487 357.2,429.457 365,429.429 372.8,429.403 380.6,429.379 388.4,429.357 396.2,429.336 404,429.317 411.8,429.299 419.6,429.282 427.4,429.266 435.2,429.251 443,429.237 450.8,429.223 458.6,429.211 466.4,429.199 474.2,429.187 482,429.176 489.8,429.166 497.6,429.156 505.4,429.147 513.2,429.138 521,429.129 528.8,429.121 536.6,429.113 544.4,429.106 552.2,429.099 560,429.092 567.8,429.085 575.6,429.079 583.4,429.072 591.2,429.067 599,429.061 606.8,429.055 614.6,429.05 622.4,429.045 630.2,429.04 638,429.035 645.8,429.03 653.6,429.026 661.4,429.022 669.2,429.017 677,429.013 684.8,429.009 692.6,429.005 700.4,429.002 708.2,428.998 716,428.995 723.8,428.991 731.6,428.988 739.4,428.985 747.2,428.981 755,428.978 762.8,428.975 770.6,428.972 778.4,428.97 786.2,428.967 794,428.964 801.8,428.961 809.6,428.959 817.4,428.956 825.2,428.954 833,428.952 840.8,428.949 848.6,428.947 856.4,428.945 864.2,428.943 872,428.94 879.8,428.938 887.6,428.936 895.4,428.934 903.2,428.932 911,428.93 918.8,428.929 926.6,428.927 934.4,428.925 942.2,428.923 950,428.921"/><text class="ser" fill="#64748b" x="962" y="435.921">45 节点树</text><line class="guide" x1="269.84" y1="110" x2="269.84" y2="480"/><text class="muted" x="277.84" y="132">B = 64</text><text class="label" x="560" y="554" text-anchor="middle">并发 B（KV 容量上限约 500 路）</text><text class="label" transform="rotate(-90)" x="-290" y="52">吞吐（k tok/s）</text><text class="note" x="170" y="576">理想口径（η = 1，未计 T_other）：E[N] = 3.36（α = 0.8）、树 E = 4.1、单层头按一层加 LM Head 估；</text><text class="note" x="170" y="600">实测（含杂项）B = 64 为 1.38x [2]。</text></svg>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg role="img" aria-labelledby="title desc" xmlns:xlink="http://www.w3.org/1999/xlink" width="1120" height="620" viewBox="0 0 806.4 446.4" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title id="title">不同结构假设下的吞吐：共同比较区间 B ≤ 350</title>
+<desc id="desc">固定接受率和简化执行模型下的四条吞吐曲线，仅绘制 B 不超过 350 的共同区间；外部 draft 的持续 KV 与权重降低可容纳并发，曲线不包含真实服务测量。</desc>
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>generate_inference_figures.py</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 446.4
+L 806.4 446.4
+L 806.4 0
+L 0 0
+z
+" style="fill: #fbfcfe"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 80.64 339.264
+L 774.144 339.264
+L 774.144 98.208
+L 80.64 98.208
+z
+" style="fill: #fbfcfe"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m4ab17bad40" d="M 0 0
+L 0 3.5
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m4ab17bad40" x="80.64" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="80.64" y="355.404625" transform="rotate(-0 80.64 355.404625)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="179.712" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="179.712" y="355.404625" transform="rotate(-0 179.712 355.404625)">50</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="278.784" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="278.784" y="355.404625" transform="rotate(-0 278.784 355.404625)">100</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="377.856" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="377.856" y="355.404625" transform="rotate(-0 377.856 355.404625)">150</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="476.928" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="476.928" y="355.404625" transform="rotate(-0 476.928 355.404625)">200</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="576" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="576" y="355.404625" transform="rotate(-0 576 355.404625)">250</text>
+     </g>
+    </g>
+    <g id="xtick_7">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="675.072" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="675.072" y="355.404625" transform="rotate(-0 675.072 355.404625)">300</text>
+     </g>
+    </g>
+    <g id="xtick_8">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m4ab17bad40" x="774.144" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #64748b" x="774.144" y="355.404625" transform="rotate(-0 774.144 355.404625)">350</text>
+     </g>
+    </g>
+    <g id="text_9">
+     <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #344054" x="427.392" y="371.404625" transform="rotate(-0 427.392 371.404625)">并发 B</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_9">
+      <path d="M 80.64 339.264
+L 774.144 339.264
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_10">
+      <defs>
+       <path id="m89075c0011" d="M 0 0
+L -3.5 0
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="339.264" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="343.834313" transform="rotate(-0 73.64 343.834313)">0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_11">
+      <path d="M 80.64 309.132
+L 774.144 309.132
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="309.132" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="313.702313" transform="rotate(-0 73.64 313.702313)">5</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_13">
+      <path d="M 80.64 279
+L 774.144 279
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="279" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="283.570312" transform="rotate(-0 73.64 283.570312)">10</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_15">
+      <path d="M 80.64 248.868
+L 774.144 248.868
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="248.868" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="253.438312" transform="rotate(-0 73.64 253.438312)">15</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_17">
+      <path d="M 80.64 218.736
+L 774.144 218.736
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_18">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="218.736" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="223.306312" transform="rotate(-0 73.64 223.306312)">20</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_19">
+      <path d="M 80.64 188.604
+L 774.144 188.604
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_20">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="188.604" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="193.174312" transform="rotate(-0 73.64 193.174312)">25</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_21">
+      <path d="M 80.64 158.472
+L 774.144 158.472
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_22">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="158.472" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="163.042312" transform="rotate(-0 73.64 163.042312)">30</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_23">
+      <path d="M 80.64 128.34
+L 774.144 128.34
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_24">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="128.34" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="132.910312" transform="rotate(-0 73.64 132.910312)">35</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_25">
+      <path d="M 80.64 98.208
+L 774.144 98.208
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.2,4; stroke-dashoffset: 0; stroke: #dce3ea; stroke-width: 0.8"/>
+     </g>
+     <g id="line2d_26">
+      <g>
+       <use xlink:href="#m89075c0011" x="80.64" y="98.208" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_18">
+      <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: end; fill: #64748b" x="73.64" y="102.778312" transform="rotate(-0 73.64 102.778312)">40</text>
+     </g>
+    </g>
+    <g id="text_19">
+     <text style="font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: middle; fill: #344054" x="53.561875" y="218.736" transform="rotate(-90 53.561875 218.736)">吞吐估算（k tok/s）</text>
+    </g>
+   </g>
+   <g id="line2d_27">
+    <path d="M 82.62144 337.369402
+L 86.58432 333.772975
+L 90.5472 330.412494
+L 94.51008 327.265479
+L 100.4544 322.902733
+L 106.39872 318.91952
+L 112.34304 315.26838
+L 118.28736 311.909447
+L 124.23168 308.808992
+L 130.176 305.938286
+L 136.12032 303.272702
+L 144.04608 300.001401
+L 151.97184 297.014652
+L 159.8976 294.276877
+L 167.82336 291.758189
+L 177.73056 288.879766
+L 187.63776 286.263088
+L 197.54496 283.874006
+L 209.4336 281.2678
+L 221.32224 278.907907
+L 233.21088 276.760985
+L 247.08096 274.488875
+L 260.95104 272.433201
+L 276.80256 270.311258
+L 294.63552 268.17157
+L 312.46848 266.254546
+L 332.28288 264.345707
+L 354.07872 262.473307
+L 377.856 260.658783
+L 403.61472 258.917477
+L 431.35488 257.259556
+L 463.05792 255.593103
+L 496.7424 254.042182
+L 534.38976 252.527776
+L 576 251.07278
+L 623.55456 249.636701
+L 677.05344 248.25193
+L 736.49664 246.939933
+L 774.144 246.209294
+L 774.144 246.209294
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke: #2563eb; stroke-width: 2.7; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_28">
+    <path d="M 82.62144 335.45604
+L 86.58432 328.300373
+L 90.5472 321.69896
+L 94.51008 315.589806
+L 98.47296 309.919829
+L 102.43584 304.643315
+L 106.39872 299.720682
+L 110.3616 295.117483
+L 114.32448 290.803603
+L 118.28736 286.752598
+L 122.25024 282.941149
+L 126.21312 279.348617
+L 132.15744 274.330735
+L 138.10176 269.710878
+L 144.04608 265.443494
+L 149.9904 261.489727
+L 155.93472 257.816232
+L 161.87904 254.394225
+L 167.82336 251.198737
+L 173.76768 248.207997
+L 181.69344 244.50622
+L 189.6192 241.095802
+L 197.54496 237.943647
+L 205.47072 235.021489
+L 213.39648 232.30504
+L 223.30368 229.167062
+L 233.21088 226.28288
+L 243.11808 223.622901
+L 255.00672 220.691704
+L 266.89536 218.010606
+L 278.784 215.548908
+L 292.65408 212.919933
+L 306.52416 210.520073
+L 322.37568 208.021329
+L 328.32 207.626843
+L 352.09728 206.366172
+L 379.83744 205.125501
+L 411.54048 203.941079
+L 447.2064 202.834921
+L 488.81664 201.771954
+L 536.3712 200.7801
+L 593.83296 199.813281
+L 661.20192 198.911487
+L 742.44096 198.057603
+L 774.144 197.776391
+L 774.144 197.776391
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke: #f97316; stroke-width: 2.7; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_29">
+    <path d="M 82.62144 334.69906
+L 86.58432 325.94618
+L 90.5472 317.662298
+L 94.51008 309.810702
+L 98.47296 302.358416
+L 102.43584 295.275734
+L 106.39872 288.535823
+L 110.3616 282.11439
+L 114.32448 275.989381
+L 120.2688 267.314269
+L 126.21312 259.200944
+L 132.15744 251.596549
+L 138.10176 244.454654
+L 144.04608 237.734309
+L 149.9904 231.399261
+L 155.93472 225.4173
+L 161.87904 219.759705
+L 167.82336 214.400791
+L 173.76768 209.317513
+L 179.712 204.489139
+L 185.65632 199.896965
+L 191.60064 195.524071
+L 199.5264 190.008341
+L 207.45216 184.822766
+L 215.37792 179.938565
+L 223.30368 175.330206
+L 231.22944 170.974964
+L 239.1552 166.852543
+L 247.08096 162.944758
+L 256.98816 158.337128
+L 266.89536 154.01105
+L 276.80256 149.94148
+L 286.70976 146.106264
+L 296.61696 142.485722
+L 308.5056 138.399891
+L 320.39424 134.571229
+L 322.37568 133.956426
+L 324.35712 133.672982
+L 344.17152 132.066268
+L 365.96736 130.533575
+L 389.74464 129.087569
+L 417.4848 127.638757
+L 447.2064 126.312509
+L 480.89088 125.031958
+L 520.51968 123.761476
+L 564.11136 122.591324
+L 615.6288 121.442029
+L 675.072 120.352314
+L 742.44096 119.344338
+L 774.144 118.935127
+L 774.144 118.935127
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke: #7c3aed; stroke-width: 2.7; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_30">
+    <path d="M 82.62144 333.696338
+L 86.58432 323.020824
+L 88.56576 317.900485
+L 90.5472 314.294512
+L 92.52864 313.196899
+L 94.51008 312.351894
+L 96.49152 311.681292
+L 100.4544 310.684273
+L 104.41728 309.978562
+L 110.3616 309.237118
+L 118.28736 308.582989
+L 128.19456 308.051777
+L 142.06464 307.581078
+L 161.87904 307.176423
+L 191.60064 306.832476
+L 237.17376 306.553455
+L 316.43136 306.321503
+L 465.03936 306.142174
+L 774.144 306.014169
+L 774.144 306.014169
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke: #64748b; stroke-width: 2.7; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_31">
+    <path d="M 207.45216 339.264
+L 207.45216 98.208
+" clip-path="url(#pdf39726b14)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #64748b"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 80.64 339.264
+L 80.64 98.208
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 80.64 339.264
+L 774.144 339.264
+" style="fill: none; stroke: #64748b; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 10px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="215.37792" y="116.2872" transform="rotate(-0 215.37792 116.2872)">B=64</text>
+   </g>
+   <g id="legend_1">
+    <g id="line2d_32">
+     <path d="M 90.09 58.948727
+L 100.59 58.948727
+L 111.09 58.948727
+" style="fill: none; stroke: #2563eb; stroke-width: 2.7; stroke-linecap: square"/>
+    </g>
+    <g id="text_21">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="119.49" y="62.623727" transform="rotate(-0 119.49 62.623727)">普通 Decode</text>
+    </g>
+    <g id="line2d_33">
+     <path d="M 90.09 74.698727
+L 100.59 74.698727
+L 111.09 74.698727
+" style="fill: none; stroke: #f97316; stroke-width: 2.7; stroke-linecap: square"/>
+    </g>
+    <g id="text_22">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="119.49" y="78.373727" transform="rotate(-0 119.49 78.373727)">外部 1B + 四步链</text>
+    </g>
+    <g id="line2d_34">
+     <path d="M 219.322031 58.948727
+L 229.822031 58.948727
+L 240.322031 58.948727
+" style="fill: none; stroke: #7c3aed; stroke-width: 2.7; stroke-linecap: square"/>
+    </g>
+    <g id="text_23">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="248.722031" y="62.623727" transform="rotate(-0 248.722031 62.623727)">单层 draft + 四步链</text>
+    </g>
+    <g id="line2d_35">
+     <path d="M 219.322031 74.698727
+L 229.822031 74.698727
+L 240.322031 74.698727
+" style="fill: none; stroke: #64748b; stroke-width: 2.7; stroke-linecap: square"/>
+    </g>
+    <g id="text_24">
+     <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="248.722031" y="78.373727" transform="rotate(-0 248.722031 78.373727)">单层 draft + 45 行树</text>
+    </g>
+   </g>
+  </g>
+  <g id="text_25">
+   <text style="font-size: 18px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #344054" x="44.352" y="31.248" transform="rotate(-0 44.352 31.248)">不同结构假设下的吞吐：共同比较区间 B ≤ 350</text>
+  </g>
+  <g id="text_26">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="392.832" transform="rotate(-0 44.352 392.832)">链 E[N]=3.3616，树 E[N]=4.1；相同接受率仅是比较假设，曲线不是论文实测。</text>
+  </g>
+  <g id="text_27">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="412.4736" transform="rotate(-0 44.352 412.4736)">外部 draft 在 120 GB KV 预算下最多 350 路（含 draft 权重与持久 KV；额外临时状态另计）。</text>
+  </g>
+  <g id="text_28">
+   <text style="font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; text-anchor: start; fill: #64748b" x="44.352" y="432.1152" transform="rotate(-0 44.352 432.1152)">渐近吞吐仅用于分析主导项，不表示有限显存内可以达到。</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pdf39726b14">
+   <rect x="80.64" y="98.208" width="693.504" height="241.056"/>
+  </clipPath>
+ </defs>
+</svg>
